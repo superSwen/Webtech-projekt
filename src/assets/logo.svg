@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="44" viewBox="0 0 220 44">
+    <defs>
+        <linearGradient id="g" x1="0" x2="1">
+            <stop offset="0" stop-color="#ff1b1b"/>
+            <stop offset="1" stop-color="#b30000"/>
+        </linearGradient>
+    </defs>
+
+    <!-- Icon: “Filmstreifen M” -->
+    <g transform="translate(0,2)">
+        <rect x="0" y="0" rx="8" ry="8" width="40" height="40" fill="#0b0b0b" stroke="#1a1a1a"/>
+        <rect x="8" y="8" width="24" height="24" fill="url(#g)" rx="4"/>
+        <!-- kleine “Perforation” -->
+        <circle cx="6" cy="12" r="1.4" fill="#ff1b1b"/>
+        <circle cx="6" cy="20" r="1.4" fill="#ff1b1b"/>
+        <circle cx="6" cy="28" r="1.4" fill="#ff1b1b"/>
+        <circle cx="34" cy="12" r="1.4" fill="#ff1b1b"/>
+        <circle cx="34" cy="20" r="1.4" fill="#ff1b1b"/>
+        <circle cx="34" cy="28" r="1.4" fill="#ff1b1b"/>
+        <path d="M12 28V16l8 10 8-10v12" fill="none" stroke="#0b0b0b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+
+    <!-- Wortmarke -->
+    <text x="52" y="30" font-family="Arial, sans-serif" font-size="22" font-weight="800" fill="#ff1b1b" letter-spacing="0.5">
+        MOVIE/SERIES
+    </text>
+    <text x="52" y="42" font-family="Arial, sans-serif" font-size="12" font-weight="600" fill="#ffffff" opacity="0.9">
+        TRACKER
+    </text>
+</svg>

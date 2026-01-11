@@ -1,179 +1,184 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
-import MediaList from '../Components/MediaList.vue'
+import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import FilmForm from '@/components/FilmForm.vue'
+import FilmList from '@/components/FilmList.vue'
+import SerieForm from '@/components/SerieForm.vue'
+import SerieList from '@/components/SerieList.vue'
+import type { FilmDto, SerieDto, FilmCreateUpdate, SerieCreateUpdate } from '@/types/media'
+import {
+  getFilms, createFilm, updateFilm, deleteFilm,
+  getSeries, createSerie, updateSerie, deleteSerie
+} from '@/api/mediaApi'
 
-type FilmDto = {
-  id: number
-  title: string
-  minutes?: number | null
-  notes?: string | null
-}
-
-type SerieDto = {
-  id: number
-  title: string
-  minutes?: number | null
-  notes?: string | null
-  season?: number | null
-  episode?: number | null
-}
-
-// Backend-Basis-URL: aus Env-Var, fallback auf Render-URL
-const API =
-  (import.meta.env.VITE_API_BASE as string | undefined) ??
-  'https://webtech-projekt-d919.onrender.com'
-
-console.log('API Base URL:', API)
-
-// Axios-Instanz
-const api = axios.create({
-  baseURL: API,
-  timeout: 20000
-})
+const router = useRouter()
 
 const loading = ref(true)
+const busy = ref(false)
 const error = ref<string | null>(null)
-const formError = ref<string | null>(null)
-const movies = ref<FilmDto[]>([])
+
+// Daten
+const films = ref<FilmDto[]>([])
 const series = ref<SerieDto[]>([])
 
-// --- Formular-State für neuen Film (POST)
-const newFilmTitle = ref('')
-const newFilmMinutes = ref<number | null>(null)
-const newFilmNotes = ref('')
+// Edit-State
+const editingFilm = ref<FilmDto | null>(null)
+const editingSerie = ref<SerieDto | null>(null)
 
-// Fallback-Daten
-const fallbackMovies: FilmDto[] = [
-  { id: 1, title: 'Inception', minutes: 148, notes: 'Rewatch' },
-  { id: 2, title: 'Interstellar', minutes: 169 }
-]
+// Form Errors
+const filmFormError = ref<string | null>(null)
+const serieFormError = ref<string | null>(null)
 
-const fallbackSeries: SerieDto[] = [
-  { id: 1, title: 'Breaking Bad – S1E1', minutes: 58, notes: 'Pilot' },
-  { id: 2, title: 'Dark – S1E1', minutes: 50 }
-]
-
-// --- GET: Daten vom Backend holen ------------------------------------------
-onMounted(async () => {
+async function loadAll() {
+  loading.value = true
+  error.value = null
   try {
-    const [filmsRes, seriesRes] = await Promise.all([
-      api.get<FilmDto[]>('/api/films'),
-      api.get<SerieDto[]>('/api/series')
-    ])
-
-    console.log('filmsRes', filmsRes.status, filmsRes.data)
-    console.log('seriesRes', seriesRes.status, seriesRes.data)
-
-    movies.value =
-      filmsRes.data && filmsRes.data.length ? filmsRes.data : fallbackMovies
-    series.value =
-      seriesRes.data && seriesRes.data.length ? seriesRes.data : fallbackSeries
+    const [f, s] = await Promise.all([getFilms(), getSeries()])
+    films.value = f
+    series.value = s
   } catch (e: any) {
-    console.error('axios error →', e)
     error.value = e?.message ?? String(e)
-    movies.value = fallbackMovies
-    series.value = fallbackSeries
   } finally {
     loading.value = false
   }
-})
+}
 
-// --- POST: neuen Film anlegen
-async function createFilm() {
+onMounted(loadAll)
+
+// --- FILMS CRUD ---
+async function onSubmitFilm(payload: FilmCreateUpdate) {
+  filmFormError.value = null
+  busy.value = true
   try {
-    formError.value = null
-    const title = newFilmTitle.value.trim()
-    if (!title) {
-      formError.value = 'Titel darf nicht leer sein.'
-      return
+    if (editingFilm.value) {
+      const updated = await updateFilm(editingFilm.value.id, payload)
+      films.value = films.value.map((x) => (x.id === updated.id ? updated : x))
+      editingFilm.value = null
+    } else {
+      const created = await createFilm(payload)
+      films.value = [...films.value, created]
     }
-    const payload = {
-      title,
-      minutes: newFilmMinutes.value,
-      notes: newFilmNotes.value || null
-    }
-
-    const res = await api.post<FilmDto>('/api/films', payload)
-    console.log('created film', res.status, res.data)
-
-    if (!res.data || !res.data.title) {
-      throw new Error('Backend hat keinen Film zurückgegeben.')
-    }
-
-    // neuen Film an Liste anhängen
-    movies.value = [...movies.value, res.data]
-
-    // Formular zurücksetzen
-    newFilmTitle.value = ''
-    newFilmMinutes.value = null
-    newFilmNotes.value = ''
   } catch (e: any) {
-    console.error('createFilm error →', e)
-    formError.value = e?.message ?? String(e)
+    filmFormError.value = e?.response?.data?.message ?? e?.message ?? String(e)
+  } finally {
+    busy.value = false
   }
+}
+
+async function onDeleteFilm(item: FilmDto) {
+  if (!confirm(`Film wirklich löschen?\n\n"${item.title}"`)) return
+  busy.value = true
+  try {
+    await deleteFilm(item.id)
+    films.value = films.value.filter((x) => x.id !== item.id)
+    if (editingFilm.value?.id === item.id) editingFilm.value = null
+  } catch (e: any) {
+    alert(e?.message ?? String(e))
+  } finally {
+    busy.value = false
+  }
+}
+
+// --- SERIES CRUD ---
+async function onSubmitSerie(payload: SerieCreateUpdate) {
+  serieFormError.value = null
+  busy.value = true
+  try {
+    if (editingSerie.value) {
+      const updated = await updateSerie(editingSerie.value.id, payload)
+      series.value = series.value.map((x) => (x.id === updated.id ? updated : x))
+      editingSerie.value = null
+    } else {
+      const created = await createSerie(payload)
+      series.value = [...series.value, created]
+    }
+  } catch (e: any) {
+    serieFormError.value = e?.response?.data?.message ?? e?.message ?? String(e)
+  } finally {
+    busy.value = false
+  }
+}
+
+async function onDeleteSerie(item: SerieDto) {
+  if (!confirm(`Serie wirklich löschen?\n\n"${item.title}"`)) return
+  busy.value = true
+  try {
+    await deleteSerie(item.id)
+    series.value = series.value.filter((x) => x.id !== item.id)
+    if (editingSerie.value?.id === item.id) editingSerie.value = null
+  } catch (e: any) {
+    alert(e?.message ?? String(e))
+  } finally {
+    busy.value = false
+  }
+}
+
+// --- OPEN DETAIL ---
+function openFilm(item: FilmDto) {
+  router.push({ name: 'filmDetail', params: { kind: 'films', id: String(item.id) } })
+}
+
+function openSerie(item: SerieDto) {
+  router.push({ name: 'serieDetail', params: { kind: 'series', id: String(item.id) } })
 }
 </script>
 
 <template>
-  <section>
-    <p v-if="loading">Lade Daten…</p>
-    <p v-else-if="error" class="err">{{ error }}</p>
+  <main class="page">
+    <header class="top">
+      <h1>Movie / Series Tracker</h1>
+      <button class="btn" @click="loadAll" :disabled="loading || busy">Refresh</button>
+    </header>
 
-    <!-- Formular für POST /api/films -->
-    <form @submit.prevent="createFilm" class="film-form">
-      <h2>Neuen Film anlegen</h2>
-      <p v-if="formError" class="err">{{ formError }}</p>
+    <p v-if="loading" class="info">Lade Daten…</p>
+    <p v-else-if="error" class="err">Backend/API Fehler: {{ error }}</p>
 
-      <div class="field">
-        <label>
-          Titel
-          <input v-model="newFilmTitle" required />
-        </label>
+    <section class="grid" v-if="!loading">
+      <div class="col">
+        <FilmForm
+          :editing="editingFilm"
+          :busy="busy"
+          :error="filmFormError"
+          @submit="onSubmitFilm"
+          @cancel="editingFilm = null"
+        />
+        <FilmList
+          :items="films"
+          :busy="busy"
+          @edit="editingFilm = $event"
+          @remove="onDeleteFilm"
+          @open="openFilm"
+        />
       </div>
 
-      <div class="field">
-        <label>
-          Minuten
-          <input v-model.number="newFilmMinutes" type="number" min="1" />
-        </label>
+      <div class="col">
+        <SerieForm
+          :editing="editingSerie"
+          :busy="busy"
+          :error="serieFormError"
+          @submit="onSubmitSerie"
+          @cancel="editingSerie = null"
+        />
+        <SerieList
+          :items="series"
+          :busy="busy"
+          @edit="editingSerie = $event"
+          @remove="onDeleteSerie"
+          @open="openSerie"
+        />
       </div>
-
-      <div class="field">
-        <label>
-          Notizen
-          <input v-model="newFilmNotes" />
-        </label>
-      </div>
-
-      <button type="submit">Film speichern</button>
-    </form>
-
-    <MediaList title="Filme" :items="movies" />
-    <MediaList title="Serien" :items="series" />
-  </section>
+    </section>
+  </main>
 </template>
 
 <style scoped>
-.err {
-  color: #c00;
-  margin-bottom: 1rem;
-}
-
-.film-form {
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 0.5rem;
-}
-
-.field {
-  margin-bottom: 0.75rem;
-}
-
-.field input {
-  display: block;
-  margin-top: 0.25rem;
-  padding: 0.3rem 0.4rem;
-}
+.page { background:#000; min-height:100vh; padding:24px; }
+.top { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; }
+h1 { color:#fff; margin:0; font-size:28px; letter-spacing:0.2px; }
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start; }
+.col { display:flex; flex-direction:column; gap:16px; }
+.btn { background:#1a1a1a; border:1px solid #333; color:#fff; padding:10px 12px; border-radius:10px; cursor:pointer; }
+.info { color:#aaa; }
+.err { color:#ff6b6b; }
+@media (max-width: 980px) { .grid { grid-template-columns:1fr; } }
 </style>
