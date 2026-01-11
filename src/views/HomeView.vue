@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+
 import FilmForm from '@/components/FilmForm.vue'
 import FilmList from '@/components/FilmList.vue'
 import SerieForm from '@/components/SerieForm.vue'
 import SerieList from '@/components/SerieList.vue'
+
 import type { FilmDto, SerieDto, FilmCreateUpdate, SerieCreateUpdate } from '@/types/media'
 import {
   getFilms, createFilm, updateFilm, deleteFilm,
@@ -17,15 +19,12 @@ const loading = ref(true)
 const busy = ref(false)
 const error = ref<string | null>(null)
 
-// Daten
 const films = ref<FilmDto[]>([])
 const series = ref<SerieDto[]>([])
 
-// Edit-State
 const editingFilm = ref<FilmDto | null>(null)
 const editingSerie = ref<SerieDto | null>(null)
 
-// Form Errors
 const filmFormError = ref<string | null>(null)
 const serieFormError = ref<string | null>(null)
 
@@ -37,7 +36,7 @@ async function loadAll() {
     films.value = f
     series.value = s
   } catch (e: any) {
-    error.value = e?.message ?? String(e)
+    error.value = e?.response?.data?.message ?? e?.message ?? String(e)
   } finally {
     loading.value = false
   }
@@ -73,7 +72,7 @@ async function onDeleteFilm(item: FilmDto) {
     films.value = films.value.filter((x) => x.id !== item.id)
     if (editingFilm.value?.id === item.id) editingFilm.value = null
   } catch (e: any) {
-    alert(e?.message ?? String(e))
+    alert(e?.response?.data?.message ?? e?.message ?? String(e))
   } finally {
     busy.value = false
   }
@@ -107,19 +106,19 @@ async function onDeleteSerie(item: SerieDto) {
     series.value = series.value.filter((x) => x.id !== item.id)
     if (editingSerie.value?.id === item.id) editingSerie.value = null
   } catch (e: any) {
-    alert(e?.message ?? String(e))
+    alert(e?.response?.data?.message ?? e?.message ?? String(e))
   } finally {
     busy.value = false
   }
 }
 
-// --- OPEN DETAIL ---
+// --- OPEN DETAIL (Route: /details/:kind/:id, name: 'details') ---
 function openFilm(item: FilmDto) {
-  router.push({ name: 'filmDetail', params: { kind: 'films', id: String(item.id) } })
+  router.push({ name: 'details', params: { kind: 'movie', id: String(item.id) } })
 }
 
 function openSerie(item: SerieDto) {
-  router.push({ name: 'serieDetail', params: { kind: 'series', id: String(item.id) } })
+  router.push({ name: 'details', params: { kind: 'series', id: String(item.id) } })
 }
 </script>
 
@@ -142,6 +141,7 @@ function openSerie(item: SerieDto) {
           @submit="onSubmitFilm"
           @cancel="editingFilm = null"
         />
+
         <FilmList
           :items="films"
           :busy="busy"
@@ -159,6 +159,7 @@ function openSerie(item: SerieDto) {
           @submit="onSubmitSerie"
           @cancel="editingSerie = null"
         />
+
         <SerieList
           :items="series"
           :busy="busy"
