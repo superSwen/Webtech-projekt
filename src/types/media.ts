@@ -1,29 +1,33 @@
 export type FilmDto = {
   id: number
   title: string
-  minutes: number | null
-  notes: string | null
+  minutes?: number | null
+  notes?: string | null
+  imdbId?: string | null // ✅ neu
 }
 
 export type SerieDto = {
   id: number
   title: string
-  season: number | null
-  episode: number | null
-  minutes: number | null
-  notes: string | null
+  season?: number | null
+  episode?: number | null
+  minutes?: number | null
+  notes?: string | null
+  imdbId?: string | null // ✅ neu
 }
 
 export type FilmCreateUpdate = {
   title: string
-  minutes: number | null
-  notes: string | null
+  minutes?: number | null
+  notes?: string | null
+  imdbId?: string | null // ✅ neu
 }
 
 export type SerieCreateUpdate = {
   title: string
-  season: number | null
-  episode: number | null
-  minutes: number | null
-  notes: string | null
+  season?: number | null
+  episode?: number | null
+  minutes?: number | null
+  notes?: string | null
+  imdbId?: string | null // ✅ neu
 }

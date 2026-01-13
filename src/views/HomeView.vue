@@ -7,6 +7,9 @@ import FilmList from '@/components/FilmList.vue'
 import SerieForm from '@/components/SerieForm.vue'
 import SerieList from '@/components/SerieList.vue'
 
+import HeroCharacter from '@/components/HeroCharacter.vue'
+import BottomBanner from '@/components/BottomBanner.vue'
+
 import type { FilmDto, SerieDto, FilmCreateUpdate, SerieCreateUpdate } from '@/types/media'
 import {
   getFilms, createFilm, updateFilm, deleteFilm,
@@ -36,7 +39,7 @@ async function loadAll() {
     films.value = f
     series.value = s
   } catch (e: any) {
-    error.value = e?.response?.data?.message ?? e?.message ?? String(e)
+    error.value = e?.message ?? String(e)
   } finally {
     loading.value = false
   }
@@ -44,7 +47,7 @@ async function loadAll() {
 
 onMounted(loadAll)
 
-// --- FILMS CRUD ---
+// ---- CRUD FILM
 async function onSubmitFilm(payload: FilmCreateUpdate) {
   filmFormError.value = null
   busy.value = true
@@ -71,14 +74,12 @@ async function onDeleteFilm(item: FilmDto) {
     await deleteFilm(item.id)
     films.value = films.value.filter((x) => x.id !== item.id)
     if (editingFilm.value?.id === item.id) editingFilm.value = null
-  } catch (e: any) {
-    alert(e?.response?.data?.message ?? e?.message ?? String(e))
   } finally {
     busy.value = false
   }
 }
 
-// --- SERIES CRUD ---
+// ---- CRUD SERIE
 async function onSubmitSerie(payload: SerieCreateUpdate) {
   serieFormError.value = null
   busy.value = true
@@ -105,18 +106,15 @@ async function onDeleteSerie(item: SerieDto) {
     await deleteSerie(item.id)
     series.value = series.value.filter((x) => x.id !== item.id)
     if (editingSerie.value?.id === item.id) editingSerie.value = null
-  } catch (e: any) {
-    alert(e?.response?.data?.message ?? e?.message ?? String(e))
   } finally {
     busy.value = false
   }
 }
 
-// --- OPEN DETAIL (Route: /details/:kind/:id, name: 'details') ---
+// ✅ Navigation
 function openFilm(item: FilmDto) {
   router.push({ name: 'details', params: { kind: 'movie', id: String(item.id) } })
 }
-
 function openSerie(item: SerieDto) {
   router.push({ name: 'details', params: { kind: 'series', id: String(item.id) } })
 }
@@ -125,8 +123,14 @@ function openSerie(item: SerieDto) {
 <template>
   <main class="page">
     <header class="top">
-      <h1>Movie / Series Tracker</h1>
-      <button class="btn" @click="loadAll" :disabled="loading || busy">Refresh</button>
+      <div class="left">
+        <h1>Movie / Series Tracker</h1>
+      </div>
+
+      <div class="right">
+        <HeroCharacter />
+        <button class="btn" @click="loadAll" :disabled="loading || busy">Refresh</button>
+      </div>
     </header>
 
     <p v-if="loading" class="info">Lade Daten…</p>
@@ -141,7 +145,6 @@ function openSerie(item: SerieDto) {
           @submit="onSubmitFilm"
           @cancel="editingFilm = null"
         />
-
         <FilmList
           :items="films"
           :busy="busy"
@@ -159,7 +162,6 @@ function openSerie(item: SerieDto) {
           @submit="onSubmitSerie"
           @cancel="editingSerie = null"
         />
-
         <SerieList
           :items="series"
           :busy="busy"
@@ -169,6 +171,8 @@ function openSerie(item: SerieDto) {
         />
       </div>
     </section>
+
+    <BottomBanner />
   </main>
 </template>
 
@@ -176,6 +180,7 @@ function openSerie(item: SerieDto) {
 .page { background:#000; min-height:100vh; padding:24px; }
 .top { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; }
 h1 { color:#fff; margin:0; font-size:28px; letter-spacing:0.2px; }
+.right { display:flex; align-items:center; gap:12px; }
 .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start; }
 .col { display:flex; flex-direction:column; gap:16px; }
 .btn { background:#1a1a1a; border:1px solid #333; color:#fff; padding:10px 12px; border-radius:10px; cursor:pointer; }
