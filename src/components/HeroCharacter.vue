@@ -28,13 +28,18 @@ const candidates: HeroItem[] = [
 const hero = ref<HeroItem | null>(null)
 
 function pickRandom() {
-  if (!props.enabled || candidates.length === 0) {
+  if (!props.enabled) {
+    hero.value = null
+    return
+  }
+
+  if (candidates.length === 0) {
     hero.value = null
     return
   }
 
   const idx = Math.floor(Math.random() * candidates.length)
-  hero.value = candidates[idx] ?? null // ✅ verhindert "undefined"
+  hero.value = candidates[idx] ?? null // ✅ Fix: niemals undefined
 }
 
 onMounted(pickRandom)
@@ -44,11 +49,11 @@ watch(
   () => pickRandom()
 )
 
-const hasHero = computed(() => props.enabled && hero.value !== null)
+const hasHero = computed(() => !!hero.value && !!props.enabled)
 </script>
 
 <template>
-  <div v-if="hasHero" class="wrap" :title="hero!.title">
+  <div v-if="hasHero" class="wrap" :title="hero?.title">
     <img class="heroImg" :src="hero!.imageUrl" :alt="hero!.title" />
   </div>
 </template>
@@ -61,7 +66,6 @@ const hasHero = computed(() => props.enabled && hero.value !== null)
   place-items: center;
   background: transparent;
 }
-
 .heroImg {
   width: 100%;
   height: 100%;
@@ -69,7 +73,6 @@ const hasHero = computed(() => props.enabled && hero.value !== null)
   display: block;
   filter: drop-shadow(0 14px 26px rgba(0, 0, 0, 0.65));
 }
-
 @media (min-width: 1100px) {
   .wrap {
     width: 260px;
