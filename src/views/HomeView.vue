@@ -200,3 +200,4 @@ h1 { color:#fff; margin:0; font-size:28px; letter-spacing:0.2px; }
 .err { color:#ff6b6b; }
 @media (max-width: 980px) { .grid { grid-template-columns:1fr; } }
 </style>
+

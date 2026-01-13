@@ -80,3 +80,4 @@ const hasHero = computed(() => !!hero.value && !!props.enabled)
   }
 }
 </style>
+
