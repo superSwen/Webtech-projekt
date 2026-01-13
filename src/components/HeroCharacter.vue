@@ -10,7 +10,7 @@ import godfatherUrl from '@/assets/the-godfather.png'
 import vaderUrl from '@/assets/vader.png'
 
 const props = withDefaults(defineProps<{ enabled?: boolean }>(), {
-  enabled: true, // ✅ default: anzeigen
+  enabled: true,
 })
 
 type HeroItem = { title: string; imageUrl: string }
@@ -28,55 +28,48 @@ const candidates: HeroItem[] = [
 const hero = ref<HeroItem | null>(null)
 
 function pickRandom() {
-  // disabled oder (falls jemals leer) -> nichts anzeigen
   if (!props.enabled || candidates.length === 0) {
     hero.value = null
     return
   }
 
-  // ✅ TS-Fix: Array-Zugriff kann in TS theoretisch undefined sein
-  hero.value = candidates[Math.floor(Math.random() * candidates.length)] ?? null
+  const idx = Math.floor(Math.random() * candidates.length)
+  hero.value = candidates[idx] ?? null // ✅ verhindert "undefined"
 }
 
 onMounted(pickRandom)
 
-// Wenn enabled von false -> true wechselt (z.B. erster Eintrag erstellt), neu würfeln:
 watch(
   () => props.enabled,
   () => pickRandom()
 )
 
-const hasHero = computed(() => !!hero.value && !!props.enabled)
+const hasHero = computed(() => props.enabled && hero.value !== null)
 </script>
 
 <template>
-  <div v-if="hasHero" class="wrap" :title="hero?.title">
+  <div v-if="hasHero" class="wrap" :title="hero!.title">
     <img class="heroImg" :src="hero!.imageUrl" :alt="hero!.title" />
   </div>
 </template>
 
 <style scoped>
-/* Größe hier steuern (einfach Werte ändern) */
 .wrap {
   width: 220px;
   height: 160px;
   display: grid;
   place-items: center;
-  background: transparent; /* kein Rahmen */
+  background: transparent;
 }
 
-/* Bild größer + “pop” */
 .heroImg {
   width: 100%;
   height: 100%;
   object-fit: contain;
   display: block;
-
-  /* optional: macht’s “cinematic”, ohne einen Rahmen zu zeigen */
   filter: drop-shadow(0 14px 26px rgba(0, 0, 0, 0.65));
 }
 
-/* Auf großen Screens ruhig noch größer */
 @media (min-width: 1100px) {
   .wrap {
     width: 260px;

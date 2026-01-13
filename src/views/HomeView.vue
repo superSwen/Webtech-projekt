@@ -31,6 +31,9 @@ const editingSerie = ref<SerieDto | null>(null)
 const filmFormError = ref<string | null>(null)
 const serieFormError = ref<string | null>(null)
 
+// ✅ wird an Components durchgereicht (z.B. um gezielt Re-Renders zu triggern)
+const refreshKey = ref(0)
+
 async function loadAll() {
   loading.value = true
   error.value = null
@@ -38,6 +41,7 @@ async function loadAll() {
     const [f, s] = await Promise.all([getFilms(), getSeries()])
     films.value = f
     series.value = s
+    refreshKey.value++ // ✅ nach erfolgreichem Laden erhöhen
   } catch (e: any) {
     error.value = e?.message ?? String(e)
   } finally {
@@ -60,6 +64,7 @@ async function onSubmitFilm(payload: FilmCreateUpdate) {
       const created = await createFilm(payload)
       films.value = [...films.value, created]
     }
+    refreshKey.value++ // ✅ nach Änderung erhöhen
   } catch (e: any) {
     filmFormError.value = e?.response?.data?.message ?? e?.message ?? String(e)
   } finally {
@@ -74,6 +79,7 @@ async function onDeleteFilm(item: FilmDto) {
     await deleteFilm(item.id)
     films.value = films.value.filter((x) => x.id !== item.id)
     if (editingFilm.value?.id === item.id) editingFilm.value = null
+    refreshKey.value++
   } finally {
     busy.value = false
   }
@@ -92,6 +98,7 @@ async function onSubmitSerie(payload: SerieCreateUpdate) {
       const created = await createSerie(payload)
       series.value = [...series.value, created]
     }
+    refreshKey.value++
   } catch (e: any) {
     serieFormError.value = e?.response?.data?.message ?? e?.message ?? String(e)
   } finally {
@@ -106,6 +113,7 @@ async function onDeleteSerie(item: SerieDto) {
     await deleteSerie(item.id)
     series.value = series.value.filter((x) => x.id !== item.id)
     if (editingSerie.value?.id === item.id) editingSerie.value = null
+    refreshKey.value++
   } finally {
     busy.value = false
   }
@@ -145,9 +153,11 @@ function openSerie(item: SerieDto) {
           @submit="onSubmitFilm"
           @cancel="editingFilm = null"
         />
+
         <FilmList
           :items="films"
           :busy="busy"
+          :refresh-key="refreshKey"
           @edit="editingFilm = $event"
           @remove="onDeleteFilm"
           @open="openFilm"
@@ -162,9 +172,11 @@ function openSerie(item: SerieDto) {
           @submit="onSubmitSerie"
           @cancel="editingSerie = null"
         />
+
         <SerieList
           :items="series"
           :busy="busy"
+          :refresh-key="refreshKey"
           @edit="editingSerie = $event"
           @remove="onDeleteSerie"
           @open="openSerie"
@@ -172,7 +184,8 @@ function openSerie(item: SerieDto) {
       </div>
     </section>
 
-    <BottomBanner />
+    <!-- ✅ FIX: refreshKey übergeben -->
+    <BottomBanner :refresh-key="refreshKey" />
   </main>
 </template>
 
