@@ -9,10 +9,9 @@ import thanosUrl from '@/assets/thanos.png'
 import godfatherUrl from '@/assets/the-godfather.png'
 import vaderUrl from '@/assets/vader.png'
 
-const props = withDefaults(
-  defineProps<{ enabled?: boolean }>(),
-  { enabled: true } // ✅ default: anzeigen
-)
+const props = withDefaults(defineProps<{ enabled?: boolean }>(), {
+  enabled: true, // ✅ default: anzeigen
+})
 
 type HeroItem = { title: string; imageUrl: string }
 
@@ -29,11 +28,14 @@ const candidates: HeroItem[] = [
 const hero = ref<HeroItem | null>(null)
 
 function pickRandom() {
-  if (!props.enabled) {
+  // disabled oder (falls jemals leer) -> nichts anzeigen
+  if (!props.enabled || candidates.length === 0) {
     hero.value = null
     return
   }
-  hero.value = candidates[Math.floor(Math.random() * candidates.length)]
+
+  // ✅ TS-Fix: Array-Zugriff kann in TS theoretisch undefined sein
+  hero.value = candidates[Math.floor(Math.random() * candidates.length)] ?? null
 }
 
 onMounted(pickRandom)
