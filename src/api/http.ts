@@ -1,31 +1,28 @@
 import axios from 'axios'
 
-// ✅ Eine Quelle für alle API-Calls
-// Local Dev: http://localhost:8080
-// Render:    https://webtech-projekt-d919.onrender.com
-//
-// Tipp (Vite): Lege im Frontend-Root eine .env.local an:
-//   VITE_API_BASE=http://localhost:8080
-//
-// Wenn VITE_API_BASE nicht gesetzt ist:
-// - DEV -> localhost
-// - PROD -> Render
 const baseURL =
-  (import.meta.env.VITE_API_BASE as string | undefined) ??
-  (import.meta.env.DEV
-    ? 'http://localhost:8080'
-    : 'https://webtech-projekt-d919.onrender.com')
+  import.meta.env.VITE_API_BASE?.toString().trim() ||
+  (import.meta.env.DEV ? 'http://localhost:8080' : '')
 
 export const api = axios.create({
   baseURL,
-  timeout: 20000
+  headers: { 'Content-Type': 'application/json' }
+})
+api.interceptors.request.use((config) => {
+  console.debug('[API →]', config.method?.toUpperCase(), (config.baseURL || '') + (config.url || ''), {
+    params: config.params,
+    data: config.data
+  })
+  return config
 })
 
-// Optional: kleine Debug-Ausgabe
 api.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    console.debug('[API ←]', res.status, res.config.url, res.data)
+    return res
+  },
   (err) => {
-    console.error('API error:', err?.response?.status, err?.response?.data || err?.message)
+    console.error('[API ✖]', err?.response?.status, err?.config?.url, err?.response?.data || err.message)
     return Promise.reject(err)
   }
 )
