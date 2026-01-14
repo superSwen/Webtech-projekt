@@ -32,14 +32,8 @@ function pickRandom() {
     hero.value = null
     return
   }
-
-  if (candidates.length === 0) {
-    hero.value = null
-    return
-  }
-
-  const idx = Math.floor(Math.random() * candidates.length)
-  hero.value = candidates[idx] ?? null // ✅ Fix: niemals undefined
+  const next = candidates[Math.floor(Math.random() * candidates.length)] ?? null
+  hero.value = next
 }
 
 onMounted(pickRandom)
@@ -80,4 +74,3 @@ const hasHero = computed(() => !!hero.value && !!props.enabled)
   }
 }
 </style>
-

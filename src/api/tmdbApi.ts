@@ -1,30 +1,32 @@
-import { api } from './http'
+// src/api/tmdbApi.ts
+import api from '@/api/http'
 
 export type TmdbHeroDto = {
-  mediaType: 'movie' | 'tv'
-  sourceTitle: string
-  personName: string
-  characterName?: string | null
+  name: string
   imageUrl: string
 }
 
 export type TmdbBannerDto = {
-  mediaType: 'movie' | 'tv'
-  sourceTitle: string
-  imageType: 'backdrop' | 'poster'
+  title: string
   imageUrl: string
+  type: 'movie' | 'tv'
 }
 
-export async function getHero(): Promise<TmdbHeroDto | null> {
-  const res = await api.get('/api/tmdb/hero', {
-    validateStatus: (s) => s === 200 || s === 204
-  })
-  return res.status === 204 ? null : (res.data as TmdbHeroDto)
+export type TmdbTrailerDto = {
+  url: string | null
 }
 
-export async function getBanner(): Promise<TmdbBannerDto | null> {
-  const res = await api.get('/api/tmdb/banner', {
-    validateStatus: (s) => s === 200 || s === 204
-  })
-  return res.status === 204 ? null : (res.data as TmdbBannerDto)
+export async function getHero(): Promise<TmdbHeroDto> {
+  const { data } = await api.get('/api/tmdb/hero')
+  return data
+}
+
+export async function getBanner(): Promise<TmdbBannerDto> {
+  const { data } = await api.get('/api/tmdb/banner')
+  return data
+}
+
+export async function getTrailer(title: string, type: 'movie' | 'tv'): Promise<TmdbTrailerDto> {
+  const { data } = await api.get('/api/tmdb/trailer', { params: { title, type } })
+  return data
 }

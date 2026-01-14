@@ -1,76 +1,125 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { getBanner, type TmdbBannerDto } from '@/api/tmdbApi'
 
-const props = defineProps<{ refreshKey: number }>()
+const props = withDefaults(
+  defineProps<{
+    refreshKey?: number
+  }>(),
+  { refreshKey: 0 }
+)
 
+const loading = ref(false)
 const banner = ref<TmdbBannerDto | null>(null)
 
 async function load() {
+  loading.value = true
   try {
     banner.value = await getBanner()
   } catch {
+    // Banner ist optional → kein Hard-Fail
     banner.value = null
+  } finally {
+    loading.value = false
   }
 }
 
-onMounted(load)
-watch(() => props.refreshKey, load)
+watch(
+  () => props.refreshKey,
+  () => load(),
+  { immediate: true }
+)
 </script>
 
 <template>
-  <section v-if="banner?.imageUrl" class="wrap">
-    <div class="imgWrap">
-      <img class="img" :src="banner.imageUrl" :alt="banner.sourceTitle" />
-      <div class="fade"></div>
-    </div>
+  <div class="wrap" v-if="banner">
+    <div
+      class="banner"
+      :style="banner.imageUrl ? { backgroundImage: `url(${banner.imageUrl})` } : undefined"
+    >
+      <div class="overlay">
+        <div class="left">
+          <div class="kicker">
+            Zufällig aus deinen Einträgen
+            <span class="dot">•</span>
+            {{ banner.type === 'movie' ? 'Film' : 'Serie' }}
+          </div>
+          <div class="title">{{ banner.title }}</div>
+        </div>
 
-    <div class="caption">
-      <span class="title">{{ banner.sourceTitle }}</span>
-      <span class="tag">• powered by TMDB</span>
+        <div class="hint" v-if="loading">lädt…</div>
+      </div>
     </div>
-  </section>
+  </div>
 </template>
 
 <style scoped>
 .wrap {
-  margin-top: 28px; /* mehr Abstand nach oben */
+  margin-top: 18px;
 }
 
-.imgWrap {
-  position: relative;
+.banner {
+  height: 180px;
   border-radius: 18px;
-  overflow: hidden; /* clean, aber kein “rahmen” */
+  background-size: cover;
+  background-position: center 25%;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.img {
-  width: 100%;
-  max-height: 360px;
-  object-fit: cover;
-  display: block;
-  filter: saturate(1.05) contrast(1.05);
-}
-
-.fade {
+/* Overlay nicht zu stark, damit das Bild nicht „komisch“ wirkt */
+.overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.70), rgba(0,0,0,0.05) 55%, rgba(0,0,0,0));
-  pointer-events: none;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.10));
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
 }
 
-.caption {
-  margin-top: 10px;
-  color: #bdbdbd;
+.left {
+  min-width: 0;
+}
+
+.kicker {
+  color: rgba(255, 255, 255, 0.75);
   font-size: 12px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dot {
+  opacity: 0.7;
 }
 
 .title {
   color: #fff;
-  font-weight: 700;
+  font-weight: 800;
+  font-size: 20px;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80vw;
 }
 
-.tag {
-  margin-left: 8px;
-  color: #9a9a9a;
+.hint {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 12px;
+  padding-bottom: 4px;
+}
+
+@media (max-width: 980px) {
+  .banner {
+    height: 160px;
+  }
+  .title {
+    max-width: 70vw;
+  }
 }
 </style>
