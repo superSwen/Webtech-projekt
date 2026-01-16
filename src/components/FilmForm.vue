@@ -17,10 +17,8 @@ const emit = defineEmits<{
 const title = ref('')
 const minutes = ref<number | null>(null)
 const notes = ref('')
+const imdbId = ref<string | null>(null)
 
-const imdbId = ref<string | null>(null) // ✅ neu
-
-// --- Search Dropdown State
 const results = ref<OmdbSearchItem[]>([])
 const show = ref(false)
 const searching = ref(false)
@@ -69,7 +67,6 @@ function closeDropdownSoon() {
 
 function onTitleInput(v: string) {
   title.value = v
-  // sobald User tippt: imdbId reset, weil Auswahl nicht mehr sicher passt
   imdbId.value = null
 
   window.clearTimeout(t)
@@ -89,7 +86,7 @@ function onSubmit() {
     title: title.value.trim(),
     minutes: minutes.value,
     notes: notes.value.trim() || null,
-    imdbId: imdbId.value // ✅ send to backend
+    imdbId: imdbId.value
   })
 }
 
@@ -101,14 +98,20 @@ function onCancel() {
 
 <template>
   <section class="card">
-    <h2>{{ header }}</h2>
+    <div class="flex items-start justify-between gap-3">
+      <div>
+        <h2 class="cardTitle">{{ header }}</h2>
+        <p class="mt-1 text-xs text-white/50">Tipp: 2+ Zeichen tippen → OMDb Vorschläge</p>
+      </div>
+      <span v-if="editing" class="pill">Edit</span>
+    </div>
 
-    <p v-if="error" class="err">{{ error }}</p>
+    <div v-if="error" class="alert error mt-4">{{ error }}</div>
 
     <label class="label">Titel</label>
-    <div class="searchWrap">
+    <div class="relative">
       <input
-        class="input"
+        class="input pr-16"
         :value="title"
         @input="onTitleInput(($event.target as HTMLInputElement).value)"
         @focus="title.trim().length >= 2 && results.length ? (show = true) : null"
@@ -116,24 +119,25 @@ function onCancel() {
         placeholder="z.B. Harry Potter…"
         :disabled="busy"
       />
-
-      <div v-if="searching" class="hint">Suche…</div>
+      <div v-if="searching" class="ddHint">Suche…</div>
 
       <div v-if="show" class="dropdown">
         <button
           v-for="r in results"
           :key="r.imdbID"
           type="button"
-          class="row"
+          class="ddRow"
           @mousedown.prevent="pick(r)"
         >
-          <span class="t">{{ r.Title }}</span>
-          <span class="m">{{ r.Year }} · {{ r.Type }}</span>
+          <span class="ddTitle">{{ r.Title }}</span>
+          <span class="ddMeta">{{ r.Year }} · {{ r.Type }}</span>
         </button>
       </div>
     </div>
 
-    <p v-if="imdbId" class="imdb">IMDB-ID: {{ imdbId }}</p>
+    <p v-if="imdbId" class="mt-2 text-xs text-white/50">
+      IMDB-ID: <span class="font-mono text-white/70">{{ imdbId }}</span>
+    </p>
 
     <label class="label">Minuten</label>
     <input class="input" type="number" v-model.number="minutes" :disabled="busy" />
@@ -141,110 +145,13 @@ function onCancel() {
     <label class="label">Notiz</label>
     <input class="input" v-model="notes" :disabled="busy" />
 
-    <div class="actions">
+    <div class="mt-5 flex flex-wrap gap-2">
       <button class="btn primary" @click="onSubmit" :disabled="busy || !title.trim()">
         {{ submitLabel }}
       </button>
-      <button v-if="editing" class="btn" @click="onCancel" :disabled="busy">Abbrechen</button>
+      <button v-if="editing" class="btn ghost" @click="onCancel" :disabled="busy">
+        Abbrechen
+      </button>
     </div>
   </section>
 </template>
-
-<style scoped>
-.card {
-  background: #111;
-  border: 1px solid #222;
-  border-radius: 18px;
-  padding: 18px;
-}
-h2 {
-  margin: 0 0 8px 0;
-  color: #fff;
-}
-.label {
-  display: block;
-  margin: 10px 0 6px;
-  color: #bdbdbd;
-  font-size: 13px;
-}
-.input {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid #2a2a2a;
-  background: #0b0b0b;
-  color: #fff;
-  outline: none;
-}
-.err {
-  color: #ff6b6b;
-  margin: 8px 0;
-}
-
-.searchWrap {
-  position: relative;
-}
-.dropdown {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  right: 0;
-  background: #0c0c0c;
-  border: 1px solid #2a2a2a;
-  border-radius: 14px;
-  overflow: hidden;
-  z-index: 10;
-}
-.row {
-  width: 100%;
-  text-align: left;
-  padding: 10px 12px;
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  color: #fff;
-}
-.row:hover {
-  background: #141414;
-}
-.t {
-  display: block;
-  font-weight: 600;
-}
-.m {
-  display: block;
-  font-size: 12px;
-  color: #9a9a9a;
-  margin-top: 2px;
-}
-.hint {
-  position: absolute;
-  right: 10px;
-  top: 10px;
-  font-size: 12px;
-  color: #9a9a9a;
-}
-.imdb {
-  margin: 8px 0 0;
-  font-size: 12px;
-  color: #9a9a9a;
-}
-
-.actions {
-  margin-top: 14px;
-  display: flex;
-  gap: 10px;
-}
-.btn {
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid #2a2a2a;
-  background: #141414;
-  color: #fff;
-  cursor: pointer;
-}
-.primary {
-  border-color: #b3001b;
-  background: #b3001b;
-}
-</style>

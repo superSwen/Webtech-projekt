@@ -23,75 +23,29 @@ watch(() => props.refreshKey, loadBanner)
 </script>
 
 <template>
-  <!-- optional: wenn du beim Laden etwas zeigen willst -->
-  <div class="wrap" v-if="loading && !banner">
-    <div class="skeleton"></div>
-  </div>
+  <div class="mt-8">
+    <div
+      v-if="loading && !banner"
+      class="h-[clamp(180px,22vw,280px)] rounded-2xl border border-white/10 bg-white/5 animate-pulse"
+    />
 
-  <div class="wrap" v-else-if="banner">
-    <div class="banner" :style="{ backgroundImage: `url(${banner.imageUrl})` }">
-      <div class="overlay">
-        <div class="kicker">
-          Zufällig aus deinen Einträgen
-          <span class="dot">•</span>
+    <div v-else-if="banner" class="relative overflow-hidden rounded-2xl border border-white/10">
+      <div
+        class="absolute inset-0 bg-cover bg-center"
+        :style="{ backgroundImage: `url(${banner.imageUrl})` }"
+      />
+      <div class="absolute inset-0 bg-gradient-to-r from-black/75 via-black/30 to-black/10" />
+
+      <div class="relative flex h-[clamp(180px,22vw,280px)] flex-col justify-center gap-2 p-5">
+        <div class="text-xs text-white/70">
+          Zufällig aus deinen Einträgen <span class="opacity-60">•</span>
           {{ banner.kind === 'movie' ? 'Film' : 'Serie' }}
         </div>
-        <div class="title">{{ banner.title }}</div>
+
+        <div class="text-xl font-black tracking-tight text-shadow sm:text-2xl">
+          {{ banner.title }}
+        </div>
       </div>
     </div>
   </div>
 </template>
-
-<style scoped>
-.wrap { margin-top: 18px; }
-
-/* ✅ größer nach unten (responsive) */
-.banner {
-  height: clamp(180px, 22vw, 280px);
-  border-radius: 18px;
-  background-size: cover;
-  background-position: center;
-  position: relative;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, rgba(0,0,0,0.72), rgba(0,0,0,0.15));
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 8px;
-  padding: 18px 18px;
-}
-
-.kicker {
-  color: rgba(255,255,255,0.75);
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.dot { opacity: 0.7; }
-
-.title {
-  color: #fff;
-  font-weight: 900;
-  font-size: 20px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 75vw;
-}
-
-/* optional skeleton */
-.skeleton {
-  height: clamp(180px, 22vw, 280px);
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: rgba(255,255,255,0.06);
-}
-</style>

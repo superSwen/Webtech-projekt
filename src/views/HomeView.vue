@@ -31,7 +31,6 @@ const editingSerie = ref<SerieDto | null>(null)
 const filmFormError = ref<string | null>(null)
 const serieFormError = ref<string | null>(null)
 
-// ✅ triggert BottomBanner reload
 const refreshKey = ref(0)
 
 async function loadAll() {
@@ -51,7 +50,6 @@ async function loadAll() {
 
 onMounted(loadAll)
 
-// ---- CRUD FILM
 async function onSubmitFilm(payload: FilmCreateUpdate) {
   filmFormError.value = null
   busy.value = true
@@ -85,7 +83,6 @@ async function onDeleteFilm(item: FilmDto) {
   }
 }
 
-// ---- CRUD SERIE
 async function onSubmitSerie(payload: SerieCreateUpdate) {
   serieFormError.value = null
   busy.value = true
@@ -119,7 +116,6 @@ async function onDeleteSerie(item: SerieDto) {
   }
 }
 
-// ✅ Navigation
 function openFilm(item: FilmDto) {
   router.push({ name: 'details', params: { kind: 'movie', id: String(item.id) } })
 }
@@ -129,23 +125,34 @@ function openSerie(item: SerieDto) {
 </script>
 
 <template>
-  <main class="page">
-    <header class="top">
-      <div class="left">
-        <h1>Movie / Series Tracker</h1>
+  <div class="space-y-6">
+    <section class="card">
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h1 class="text-3xl font-extrabold tracking-tight">Movie / Series Tracker</h1>
+          <p class="mt-1 text-sm text-white/60">
+            Speichere Filme & Serien, zieh dir Details von OMDb und Trailer von TMDB.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <HeroCharacter class="hidden sm:block" />
+          <button class="btn" @click="loadAll" :disabled="loading || busy">
+            Refresh
+          </button>
+        </div>
       </div>
 
-      <div class="right">
-        <HeroCharacter />
-        <button class="btn" @click="loadAll" :disabled="loading || busy">Refresh</button>
+      <div class="mt-4" v-if="loading">
+        <div class="alert info">Lade Daten…</div>
       </div>
-    </header>
+      <div class="mt-4" v-else-if="error">
+        <div class="alert error">Backend/API Fehler: {{ error }}</div>
+      </div>
+    </section>
 
-    <p v-if="loading" class="info">Lade Daten…</p>
-    <p v-else-if="error" class="err">Backend/API Fehler: {{ error }}</p>
-
-    <section class="grid" v-if="!loading">
-      <div class="col">
+    <section class="grid gap-6 lg:grid-cols-2" v-if="!loading">
+      <div class="space-y-6">
         <FilmForm
           :editing="editingFilm"
           :busy="busy"
@@ -162,7 +169,7 @@ function openSerie(item: SerieDto) {
         />
       </div>
 
-      <div class="col">
+      <div class="space-y-6">
         <SerieForm
           :editing="editingSerie"
           :busy="busy"
@@ -181,18 +188,5 @@ function openSerie(item: SerieDto) {
     </section>
 
     <BottomBanner :refreshKey="refreshKey" />
-  </main>
+  </div>
 </template>
-
-<style scoped>
-.page { background:#000; min-height:100vh; padding:24px; }
-.top { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; }
-h1 { color:#fff; margin:0; font-size:28px; letter-spacing:0.2px; }
-.right { display:flex; align-items:center; gap:12px; }
-.grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; align-items:start; }
-.col { display:flex; flex-direction:column; gap:16px; }
-.btn { background:#1a1a1a; border:1px solid #333; color:#fff; padding:10px 12px; border-radius:10px; cursor:pointer; }
-.info { color:#aaa; }
-.err { color:#ff6b6b; }
-@media (max-width: 980px) { .grid { grid-template-columns:1fr; } }
-</style>
