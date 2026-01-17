@@ -6,6 +6,8 @@ import FilmForm from '@/components/FilmForm.vue'
 import FilmList from '@/components/FilmList.vue'
 import SerieForm from '@/components/SerieForm.vue'
 import SerieList from '@/components/SerieList.vue'
+import RandomFromListCard from '@/components/RandomFromListCard.vue'
+
 
 import type { FieldErrors } from '@/utils/fieldErrors'
 import { extractFieldErrors } from '@/utils/fieldErrors'
@@ -205,45 +207,56 @@ function openSerie(item: SerieDto) {
       </div>
     </section>
 
-    <!-- forms + lists -->
-    <section class="grid gap-6 lg:grid-cols-2" v-if="!loading">
-      <div class="space-y-6">
-        <FilmForm
-          :editing="editingFilm"
-          :busy="busy"
-          :error="filmFormError"
-          :fieldErrors="filmFieldErrors"
-          @submit="onSubmitFilm"
-          @cancel="editingFilm = null"
-        />
-        <FilmList
-          :items="films"
-          :busy="busy"
-          @edit="startEditFilm"
-          @remove="onDeleteFilm"
-          @open="openFilm"
-        />
-      </div>
+        <!-- forms + lists -->
+        <section class="grid gap-6 lg:grid-cols-2" v-if="!loading">
+          <div class="space-y-6">
+            <FilmForm
+              :editing="editingFilm"
+              :busy="busy"
+              :error="filmFormError"
+              :fieldErrors="filmFieldErrors"
+              @submit="onSubmitFilm"
+              @cancel="editingFilm = null"
+            />
+            <FilmList
+              :items="films"
+              :busy="busy"
+              @edit="startEditFilm"
+              @remove="onDeleteFilm"
+              @open="openFilm"
+            />
+          </div>
 
-      <div class="space-y-6">
-        <SerieForm
-          :editing="editingSerie"
-          :busy="busy"
-          :error="serieFormError"
-          :fieldErrors="serieFieldErrors"
-          @submit="onSubmitSerie"
-          @cancel="editingSerie = null"
-        />
-        <SerieList
-          :items="series"
-          :busy="busy"
-          @edit="startEditSerie"
-          @remove="onDeleteSerie"
-          @open="openSerie"
-        />
-      </div>
-    </section>
+          <div class="space-y-6">
+            <SerieForm
+              :editing="editingSerie"
+              :busy="busy"
+              :error="serieFormError"
+              :fieldErrors="serieFieldErrors"
+              @submit="onSubmitSerie"
+              @cancel="editingSerie = null"
+            />
+            <SerieList
+              :items="series"
+              :busy="busy"
+              @edit="startEditSerie"
+              @remove="onDeleteSerie"
+              @open="openSerie"
+            />
+          </div>
+        </section>
 
-    <BottomBanner :refreshKey="refreshKey" />
+        <!-- ✅ Random Card zwischen Listen und BottomBanner -->
+        <RandomFromListCard
+          v-if="!loading"
+          :films="films"
+          :series="series"
+          :busy="busy"
+          @openFilm="openFilm"
+          @openSerie="openSerie"
+        />
+
+        <BottomBanner :refreshKey="refreshKey" />
+
   </div>
 </template>
