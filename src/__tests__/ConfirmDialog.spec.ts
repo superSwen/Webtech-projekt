@@ -32,7 +32,11 @@ describe('ConfirmDialog', () => {
     const buttons = wrapper.findAll('button')
     expect(buttons.length).toBeGreaterThanOrEqual(2)
 
-    await buttons[1].trigger('click')
+    const confirmBtn = buttons.at(1)
+    expect(confirmBtn).toBeTruthy()
+    await confirmBtn!.trigger('click')
+
     expect(wrapper.emitted('confirm')).toBeTruthy()
+
   })
 })

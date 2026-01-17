@@ -14,8 +14,9 @@ describe('FilmList', () => {
     expect(titleLink.exists()).toBe(true)
 
     await titleLink.trigger('click')
+
     const emitted = wrapper.emitted('open')
     expect(emitted).toBeTruthy()
-    expect(emitted![0][0]).toEqual(item)
+    expect(emitted?.[0]?.[0]).toEqual(item)
   })
 })

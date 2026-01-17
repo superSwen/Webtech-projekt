@@ -43,18 +43,20 @@ describe('FilmForm', () => {
     await nextTick()
 
     const notesInput = wrapper.findAll('input.input').at(2)
-    await notesInput!.setValue('  Nice  ')
-    await nextTick()
+    if (!notesInput) throw new Error('notes input missing')
+    await notesInput.setValue('  Nice  ')
+
+
 
     await wrapper.find('button.btn.primary').trigger('click')
 
-    const emitted = wrapper.emitted('submit')
-    expect(emitted).toBeTruthy()
-    expect(emitted![0][0]).toEqual({
-      title: 'Dune',
-      minutes: 155,
-      notes: 'Nice',
-      imdbId: null,
-    })
+        const emitted = wrapper.emitted('submit')
+        expect(emitted).toBeTruthy()
+        expect(emitted?.[0]?.[0]).toEqual({
+          title: 'Dune',
+          minutes: 155,
+          notes: 'Nice',
+          imdbId: null,
+        })
   })
 })
