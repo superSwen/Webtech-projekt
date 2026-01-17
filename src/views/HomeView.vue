@@ -8,6 +8,9 @@ import SerieForm from '@/components/SerieForm.vue'
 import SerieList from '@/components/SerieList.vue'
 import RandomFromListCard from '@/components/RandomFromListCard.vue'
 
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
+
+
 
 import type { FieldErrors } from '@/utils/fieldErrors'
 import { extractFieldErrors } from '@/utils/fieldErrors'
@@ -40,6 +43,58 @@ const filmFieldErrors = ref<FieldErrors>({})
 const serieFieldErrors = ref<FieldErrors>({})
 
 const refreshKey = ref(0)
+
+//delete FUnktion
+
+type PendingDelete =
+  | { kind: 'film'; item: FilmDto }
+  | { kind: 'serie'; item: SerieDto }
+
+const pendingDelete = ref<PendingDelete | null>(null)
+
+function askDeleteFilm(item: FilmDto) {
+  pendingDelete.value = { kind: 'film', item }
+}
+function askDeleteSerie(item: SerieDto) {
+  pendingDelete.value = { kind: 'serie', item }
+}
+function cancelDelete() {
+  pendingDelete.value = null
+}
+
+async function confirmDelete() {
+  const p = pendingDelete.value
+  if (!p) return
+
+  pendingDelete.value = null
+  busy.value = true
+
+  try {
+    if (p.kind === 'film') {
+      await deleteFilm(p.item.id)
+      films.value = films.value.filter((x) => x.id !== p.item.id)
+      if (editingFilm.value?.id === p.item.id) editingFilm.value = null
+      filmFieldErrors.value = {}
+      filmFormError.value = null
+    } else {
+      await deleteSerie(p.item.id)
+      series.value = series.value.filter((x) => x.id !== p.item.id)
+      if (editingSerie.value?.id === p.item.id) editingSerie.value = null
+      serieFieldErrors.value = {}
+      serieFormError.value = null
+    }
+
+    refreshKey.value++
+  } catch (e: any) {
+    // falls löschen fehlschlägt, wenigstens sichtbar machen
+    const msg = e?.response?.data?.message ?? e?.message ?? String(e)
+    if (p.kind === 'film') filmFormError.value = msg
+    else serieFormError.value = msg
+  } finally {
+    busy.value = false
+  }
+}
+
 
 async function loadAll() {
   loading.value = true
@@ -103,23 +158,6 @@ async function onSubmitFilm(payload: FilmCreateUpdate) {
   }
 }
 
-async function onDeleteFilm(item: FilmDto) {
-  if (!confirm(`Film wirklich löschen?\n\n"${item.title}"`)) return
-  busy.value = true
-  try {
-    await deleteFilm(item.id)
-    films.value = films.value.filter((x) => x.id !== item.id)
-    if (editingFilm.value?.id === item.id) editingFilm.value = null
-
-    // optional: also clear film errors when deleting something
-    filmFieldErrors.value = {}
-    filmFormError.value = null
-
-    refreshKey.value++
-  } finally {
-    busy.value = false
-  }
-}
 
 async function onSubmitSerie(payload: SerieCreateUpdate) {
   serieFormError.value = null
@@ -222,7 +260,7 @@ function openSerie(item: SerieDto) {
               :items="films"
               :busy="busy"
               @edit="startEditFilm"
-              @remove="onDeleteFilm"
+              @remove="askDeleteFilm"
               @open="openFilm"
             />
           </div>
@@ -240,13 +278,25 @@ function openSerie(item: SerieDto) {
               :items="series"
               :busy="busy"
               @edit="startEditSerie"
-              @remove="onDeleteSerie"
+              @remove="askDeleteSerie"
               @open="openSerie"
             />
           </div>
         </section>
 
-        <!-- ✅ Random Card zwischen Listen und BottomBanner -->
+        <!-- Delete CArd -->
+        <ConfirmDialog
+          :open="pendingDelete !== null"
+          :title="pendingDelete?.kind === 'film' ? 'Film löschen?' : 'Serie löschen?'"
+          :message="pendingDelete ? `Willst du „${pendingDelete.item.title}“ wirklich löschen?` : ''"
+          confirm-text="Löschen"
+          cancel-text="Abbrechen"
+          :danger="true"
+          @close="cancelDelete"
+          @confirm="confirmDelete"
+        />
+
+        <!-- Random Card -->
         <RandomFromListCard
           v-if="!loading"
           :films="films"
