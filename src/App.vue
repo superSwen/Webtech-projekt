@@ -8,10 +8,7 @@ import logoUrl from '@/assets/logo.svg'
       <div class="container-app flex items-center justify-between py-3">
         <RouterLink to="/" class="flex items-center gap-3">
           <img class="h-11 w-auto" :src="logoUrl" alt="Movie / Series Tracker" />
-          <div class="leading-tight">
-            <div class="text-lg font-black tracking-tight text-red-500">MOVIE/SERIES</div>
-            <div class="text-xs font-semibold text-white/60">TRACKER</div>
-          </div>
+
         </RouterLink>
 
         <div class="flex items-center gap-2">

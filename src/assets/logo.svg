@@ -21,7 +21,7 @@
     </g>
 
     <!-- Wortmarke -->
-    <text x="52" y="30" font-family="Arial, sans-serif" font-size="22" font-weight="800" fill="#ff1b1b" letter-spacing="0.5">
+    <text x="52" y="20" font-family="Arial, sans-serif" font-size="22" font-weight="800" fill="#ff1b1b" letter-spacing="0.5">
         MOVIE/SERIES
     </text>
     <text x="52" y="42" font-family="Arial, sans-serif" font-size="12" font-weight="600" fill="#ffffff" opacity="0.9">
