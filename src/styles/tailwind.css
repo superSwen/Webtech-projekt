@@ -14,10 +14,30 @@
     color: white;
 
     /* makes it instantly feel more "premium" */
+    /* soft / smoky gradients (same colors, smoother falloff) */
     background-image:
-      radial-gradient(900px circle at 10% 0%, rgba(229, 9, 20, 0.22), transparent 55%),
-      radial-gradient(900px circle at 90% 20%, rgba(99, 102, 241, 0.16), transparent 55%),
-      radial-gradient(900px circle at 50% 120%, rgba(16, 185, 129, 0.10), transparent 60%);
+      radial-gradient(900px circle at 10% 0%,
+        rgba(229, 9, 20, 0.22) 0%,
+        rgba(229, 9, 20, 0.14) 28%,
+        rgba(229, 9, 20, 0.06) 48%,
+        transparent 72%
+      ),
+      radial-gradient(900px circle at 90% 20%,
+        rgba(99, 102, 241, 0.16) 0%,
+        rgba(99, 102, 241, 0.10) 30%,
+        rgba(99, 102, 241, 0.04) 52%,
+        transparent 75%
+      ),
+      radial-gradient(900px circle at 50% 120%,
+        rgba(16, 185, 129, 0.10) 0%,
+        rgba(16, 185, 129, 0.06) 35%,
+        rgba(16, 185, 129, 0.03) 55%,
+        transparent 80%
+      );
+
+    /* optional: makes the glow feel more stable / premium */
+    background-repeat: no-repeat;
+    background-attachment: fixed;
   }
 }
 
