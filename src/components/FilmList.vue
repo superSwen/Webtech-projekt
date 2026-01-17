@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { FilmDto } from '@/types/media'
+import { useFavorites } from '@/utils/favorites'
 
 defineProps<{
   items: FilmDto[]
@@ -11,6 +12,8 @@ const emit = defineEmits<{
   (e: 'remove', item: FilmDto): void
   (e: 'open', item: FilmDto): void
 }>()
+
+const { isFavorite, toggleFavorite } = useFavorites()
 </script>
 
 <template>
@@ -31,6 +34,20 @@ const emit = defineEmits<{
         </div>
 
         <div class="flex gap-2 sm:shrink-0">
+          <button
+            type="button"
+            class="btn ghost"
+            :class="isFavorite('film', it.id) ? 'border-red-500/30 text-red-200' : ''"
+            :aria-pressed="isFavorite('film', it.id)"
+            :title="isFavorite('film', it.id) ? 'Favorit entfernen' : 'Als Favorit markieren'"
+            :disabled="busy"
+            @click="toggleFavorite('film', it.id)"
+          >
+            <span class="text-lg leading-none">
+              {{ isFavorite('film', it.id) ? '★' : '☆' }}
+            </span>
+          </button>
+
           <button class="btn" :disabled="busy" @click="emit('edit', it)">Bearbeiten</button>
           <button class="btn danger" :disabled="busy" @click="emit('remove', it)">Löschen</button>
         </div>
