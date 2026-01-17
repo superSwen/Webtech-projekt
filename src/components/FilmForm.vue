@@ -230,3 +230,66 @@ function onCancel() {
     </div>
   </section>
 </template>
+
+<style scoped>
+/* ✅ Fix: Dropdown soll nicht “nach unten wachsen”, sondern max 4 Zeilen + Scroll */
+.dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 50;
+
+  background: rgba(10, 10, 10, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+
+  /* ~4 Treffer sichtbar (je nach ddRow Höhe) */
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.ddRow {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.ddRow:hover {
+  background: rgba(255, 27, 27, 0.12);
+}
+.ddTitle {
+  display: block;
+  font-weight: 700;
+}
+.ddMeta {
+  display: block;
+  font-size: 12px;
+  opacity: 0.65;
+}
+
+.ddHint {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* optional: nicer scrollbars */
+.dropdown::-webkit-scrollbar {
+  width: 10px;
+}
+.dropdown::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+}
+.dropdown::-webkit-scrollbar-track {
+  background: transparent;
+}
+</style>
