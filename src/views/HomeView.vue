@@ -7,6 +7,9 @@ import FilmList from '@/components/FilmList.vue'
 import SerieForm from '@/components/SerieForm.vue'
 import SerieList from '@/components/SerieList.vue'
 
+import type { FieldErrors } from '@/utils/fieldErrors'
+import { extractFieldErrors } from '@/utils/fieldErrors'
+
 import HeroCharacter from '@/components/HeroCharacter.vue'
 import BottomBanner from '@/components/BottomBanner.vue'
 
@@ -31,6 +34,9 @@ const editingSerie = ref<SerieDto | null>(null)
 const filmFormError = ref<string | null>(null)
 const serieFormError = ref<string | null>(null)
 
+const filmFieldErrors = ref<FieldErrors>({})
+const serieFieldErrors = ref<FieldErrors>({})
+
 const refreshKey = ref(0)
 
 async function loadAll() {
@@ -50,9 +56,24 @@ async function loadAll() {
 
 onMounted(loadAll)
 
+/** ✅ Clear errors when entering edit mode */
+function startEditFilm(item: FilmDto) {
+  editingFilm.value = item
+  filmFieldErrors.value = {}
+  filmFormError.value = null
+}
+
+function startEditSerie(item: SerieDto) {
+  editingSerie.value = item
+  serieFieldErrors.value = {}
+  serieFormError.value = null
+}
+
 async function onSubmitFilm(payload: FilmCreateUpdate) {
   filmFormError.value = null
+  filmFieldErrors.value = {}
   busy.value = true
+
   try {
     if (editingFilm.value) {
       const updated = await updateFilm(editingFilm.value.id, payload)
@@ -62,9 +83,19 @@ async function onSubmitFilm(payload: FilmCreateUpdate) {
       const created = await createFilm(payload)
       films.value = [...films.value, created]
     }
+
+    /** ✅ Clear errors after successful submit */
+    filmFieldErrors.value = {}
+    filmFormError.value = null
+
     refreshKey.value++
   } catch (e: any) {
-    filmFormError.value = e?.response?.data?.message ?? e?.message ?? String(e)
+    const fe = extractFieldErrors(e)
+    if (fe) {
+      filmFieldErrors.value = fe
+    } else {
+      filmFormError.value = e?.response?.data?.message ?? e?.message ?? String(e)
+    }
   } finally {
     busy.value = false
   }
@@ -77,6 +108,11 @@ async function onDeleteFilm(item: FilmDto) {
     await deleteFilm(item.id)
     films.value = films.value.filter((x) => x.id !== item.id)
     if (editingFilm.value?.id === item.id) editingFilm.value = null
+
+    // optional: also clear film errors when deleting something
+    filmFieldErrors.value = {}
+    filmFormError.value = null
+
     refreshKey.value++
   } finally {
     busy.value = false
@@ -85,7 +121,9 @@ async function onDeleteFilm(item: FilmDto) {
 
 async function onSubmitSerie(payload: SerieCreateUpdate) {
   serieFormError.value = null
+  serieFieldErrors.value = {}
   busy.value = true
+
   try {
     if (editingSerie.value) {
       const updated = await updateSerie(editingSerie.value.id, payload)
@@ -95,9 +133,19 @@ async function onSubmitSerie(payload: SerieCreateUpdate) {
       const created = await createSerie(payload)
       series.value = [...series.value, created]
     }
+
+    /** ✅ Clear errors after successful submit */
+    serieFieldErrors.value = {}
+    serieFormError.value = null
+
     refreshKey.value++
   } catch (e: any) {
-    serieFormError.value = e?.response?.data?.message ?? e?.message ?? String(e)
+    const fe = extractFieldErrors(e)
+    if (fe) {
+      serieFieldErrors.value = fe
+    } else {
+      serieFormError.value = e?.response?.data?.message ?? e?.message ?? String(e)
+    }
   } finally {
     busy.value = false
   }
@@ -110,6 +158,11 @@ async function onDeleteSerie(item: SerieDto) {
     await deleteSerie(item.id)
     series.value = series.value.filter((x) => x.id !== item.id)
     if (editingSerie.value?.id === item.id) editingSerie.value = null
+
+    // optional: also clear serie errors when deleting something
+    serieFieldErrors.value = {}
+    serieFormError.value = null
+
     refreshKey.value++
   } finally {
     busy.value = false
@@ -126,6 +179,7 @@ function openSerie(item: SerieDto) {
 
 <template>
   <div class="space-y-6">
+    <!-- header card -->
     <section class="card">
       <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
@@ -151,19 +205,21 @@ function openSerie(item: SerieDto) {
       </div>
     </section>
 
+    <!-- forms + lists -->
     <section class="grid gap-6 lg:grid-cols-2" v-if="!loading">
       <div class="space-y-6">
         <FilmForm
           :editing="editingFilm"
           :busy="busy"
           :error="filmFormError"
+          :fieldErrors="filmFieldErrors"
           @submit="onSubmitFilm"
           @cancel="editingFilm = null"
         />
         <FilmList
           :items="films"
           :busy="busy"
-          @edit="editingFilm = $event"
+          @edit="startEditFilm"
           @remove="onDeleteFilm"
           @open="openFilm"
         />
@@ -174,13 +230,14 @@ function openSerie(item: SerieDto) {
           :editing="editingSerie"
           :busy="busy"
           :error="serieFormError"
+          :fieldErrors="serieFieldErrors"
           @submit="onSubmitSerie"
           @cancel="editingSerie = null"
         />
         <SerieList
           :items="series"
           :busy="busy"
-          @edit="editingSerie = $event"
+          @edit="startEditSerie"
           @remove="onDeleteSerie"
           @open="openSerie"
         />
