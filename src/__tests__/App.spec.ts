@@ -3,7 +3,8 @@ import { mount } from '@vue/test-utils'
 import App from '../App.vue'
 
 describe('App', () => {
-  /** Test 1: App mountet erfolgreich und rendert RouterView-Stub (Smoke Test). */
+  /** Test 1: Prüft, dass die App ohne Fehler startet und der Router-Bereich angezeigt wird. */
+
   it('mounts_and_renders_routerview_test1', () => {
     const wrapper = mount(App, {
       global: {

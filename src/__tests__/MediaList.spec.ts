@@ -3,7 +3,7 @@ import { mount, RouterLinkStub } from '@vue/test-utils'
 import MediaList from '@/components/MediaList.vue'
 
 describe('MediaList', () => {
-  /** Test 5: Bei leerer Liste wird der Empty-State Text angezeigt (Edge Case). */
+ /** Test 5: Wenn keine Einträge da sind, soll eine "empty"-Nachricht angezeigt werden. */
   it('shows_empty_state_when_no_items_test5', () => {
     const wrapper = mount(MediaList, {
       props: { title: 'Filme', kind: 'movie', items: [] },
@@ -14,7 +14,7 @@ describe('MediaList', () => {
     expect(wrapper.text()).toContain('0 Einträge')
   })
 
-  /** Test 6: Rendert RouterLink mit korrektem to (/details/{kind}/{id}) (Happy Path). */
+  /** Test 6: Prüft, dass ein Eintrag angezeigt wird und der Link zu den Details richtig ist. */
   it('renders_routerlink_to_details_test6', () => {
     const wrapper = mount(MediaList, {
       props: {

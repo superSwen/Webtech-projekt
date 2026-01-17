@@ -16,7 +16,7 @@ describe('FilmForm', () => {
     vi.useRealTimers()
   })
 
-  /** Test 7: Submit bleibt disabled, solange Pflichtfelder ungültig sind (Edge Case). */
+  /** Test 7: Ohne gültige Eingaben darf man nicht speichern (Button ist deaktiviert). */
   it('submit_disabled_when_invalid_test7', async () => {
     const wrapper = mount(FilmForm, {
       props: { editing: null, busy: false, error: null, fieldErrors: {} },
@@ -27,7 +27,7 @@ describe('FilmForm', () => {
     expect((submitBtn.element as HTMLButtonElement).disabled).toBe(true)
   })
 
-  /** Test 8: Bei gültigen Inputs wird submit mit getrimmtem Payload emitted (Happy Path). */
+  /** Test 8: Bei gültigen Eingaben wird ein "submit" Event mit den richtigen Daten gesendet. */
   it('emits_submit_with_trimmed_payload_test8', async () => {
     const wrapper = mount(FilmForm, {
       props: { editing: null, busy: false, error: null, fieldErrors: {} },

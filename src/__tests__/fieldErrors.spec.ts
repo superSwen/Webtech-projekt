@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { extractFieldErrors } from '@/utils/fieldErrors'
 
 describe('extractFieldErrors', () => {
-  /** Test 2: Liefert FieldErrors bei Axios-Style Error (status 400 + object data). */
+  /** Test 2: Wenn der Server 400 + Feldfehler schickt, werden diese Feldfehler korrekt zurückgegeben. */
   it('returns_field_errors_for_axios_400_test2', () => {
     const err = {
       response: {

@@ -4,9 +4,7 @@ import { nextTick } from 'vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
 describe('ConfirmDialog', () => {
-  /**
-   * Test 9: Wenn Dialog open ist, löst Escape ein 'close' aus und Confirm-Button ein 'confirm' (Happy+Edge).
-   */
+  /** Test 9: Dialog: Escape schließt ihn und Klick auf "Löschen" bestätigt ihn. */
   it('escape_emits_close_and_confirm_click_emits_confirm_test9', async () => {
     const wrapper = mount(ConfirmDialog, {
       props: {

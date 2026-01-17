@@ -17,7 +17,7 @@ const localStorageMock = {
 vi.stubGlobal('localStorage', localStorageMock)
 
 describe('useFavorites', () => {
-  /** Test 4: toggleFavorite setzt/entfernt Favorit und persistiert in localStorage. */
+  /** Test 4: Favorit an/aus schalten und prüfen, dass es im localStorage gespeichert wird. */
   it('toggleFavorite_persists_to_localStorage_test4', async () => {
     localStorage.clear()
     vi.resetModules() // wichtig: favorites lädt beim Import einmal aus Storage

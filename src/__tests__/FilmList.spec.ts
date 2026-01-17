@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 import FilmList from '@/components/FilmList.vue'
 
 describe('FilmList', () => {
-  /** Test 10: Klick auf Titel-Link emitted "open" mit korrektem Item (Happy Path). */
+  /** Test 10: Klick auf einen Film-Titel löst das "open" Event mit dem richtigen Film aus. */
   it('click_title_emits_open_test10', async () => {
     const item = { id: 3, title: 'Inception', minutes: 148, notes: null, imdbId: null }
     const wrapper = mount(FilmList, {
