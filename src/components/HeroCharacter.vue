@@ -36,10 +36,9 @@ watch(() => props.enabled, pickRandom)
 const hasHero = computed(() => !!hero.value && !!props.enabled)
 
 /**
- * Fade into background:
- * - Radial fade removes hard edges on all sides
- * - Extra bottom fade gives that "poster dissolving" feel
- * Safari needs WebkitMaskImage.
+ * Fade into background (no frame):
+ * - radial fade removes hard edges
+ * - extra bottom fade gives "dissolve" feeling
  */
 const fadeMask = {
   WebkitMaskImage:
@@ -53,15 +52,27 @@ const fadeMask = {
 
 <template>
   <div v-if="hasHero" class="relative h-44 w-72">
-    <img
-      :src="hero!.imageUrl"
-      :alt="hero!.title"
-      :title="hero!.title"
-      class="h-full w-full object-contain drop-shadow-2xl"
-      :style="fadeMask"
-    />
+    <!-- Mask wrapper so BOTH image + shine fade into background -->
+    <div class="relative h-full w-full" :style="fadeMask">
+      <!-- Hero image -->
+      <img
+        :src="hero!.imageUrl"
+        :alt="hero!.title"
+        :title="hero!.title"
+        class="heroFloat h-full w-full object-contain drop-shadow-2xl"
+      />
 
-    <!-- Optional: subtle glow behind the character to make it pop (no frame) -->
+      <!-- Moving shine sweep -->
+      <div class="pointer-events-none absolute inset-0">
+        <div
+          class="heroShine absolute -inset-y-10 -left-1/2 w-2/3
+                 bg-gradient-to-r from-transparent via-white/20 to-transparent
+                 blur-2xl opacity-60 mix-blend-screen"
+        />
+      </div>
+    </div>
+
+    <!-- subtle glow behind the character (no frame) -->
     <div
       class="pointer-events-none absolute inset-0 -z-10 blur-2xl opacity-40"
       :style="{
@@ -71,3 +82,45 @@ const fadeMask = {
     />
   </div>
 </template>
+
+<style scoped>
+@keyframes shine-sweep {
+  0% {
+    transform: translateX(-170%) rotate(14deg);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.75;
+  }
+  55% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: translateX(170%) rotate(14deg);
+    opacity: 0;
+  }
+}
+
+.heroShine {
+  animation: shine-sweep 3.2s ease-in-out infinite;
+}
+
+/* Optional subtle "moving pic" effect */
+@keyframes floaty {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-3px); }
+  100% { transform: translateY(0px); }
+}
+
+.heroFloat {
+  animation: floaty 6s ease-in-out infinite;
+}
+
+/* Respect OS reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .heroShine,
+  .heroFloat {
+    animation: none !important;
+  }
+}
+</style>
