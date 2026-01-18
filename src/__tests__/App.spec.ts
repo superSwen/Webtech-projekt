@@ -2,18 +2,9 @@ import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import App from '../App.vue'
 
-const authMock = vi.hoisted(() => {
-  const { ref } = require('vue')
-  return {
-    useAuth: () => ({
-      push: vi.fn(),
-      clearSession: vi.fn(),
-      session: ref<{ token: string; username: string } | null>(null),
-    }),
-  }
-})
-
-vi.mock('@/stores/auth', () => authMock)
+vi.mock('vue-router', () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
+}))
 
 describe('App', () => {
   /** Test 1: Prüft, dass die App ohne Fehler startet und der Router-Bereich angezeigt wird. */

@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { login } from '@/api/authApi'
 import { setSession } from '@/auth/session'
-import logoUrl from '@/assets/logo.svg'
+import logoUrl from '@/assets/logoLogin.png'
 
 const router = useRouter()
 const route = useRoute()
@@ -12,7 +12,6 @@ const username = ref('')
 const password = ref('')
 const busy = ref(false)
 const error = ref<string | null>(null)
-const showPw = ref(false)
 const capsOn = ref(false)
 
 const canSubmit = computed(() => username.value.trim().length > 0 && password.value.length > 0 && !busy.value)
@@ -59,9 +58,8 @@ async function submit() {
       <section class="card w-full max-w-md">
         <!-- header -->
         <div class="flex items-center gap-4">
-          <div class="grid h-12 w-12 place-items-center rounded-2xl bg-white/5 ring-1 ring-white/10">
-            <img class="h-9 w-auto" :src="logoUrl" alt="Logo" />
-          </div>
+          <!-- KEIN viereck/box mehr ums logo -->
+          <img class="h-48 w-auto shrink-0" :src="logoUrl" alt="Logo" />
 
           <div class="flex-1">
             <h1 class="text-2xl font-extrabold tracking-tight">Login</h1>
@@ -106,7 +104,6 @@ async function submit() {
               @keydown="onPwKey"
               @keyup.enter="submit"
             />
-
           </div>
 
           <button class="btn primary w-full" :disabled="!canSubmit" @click="submit">
