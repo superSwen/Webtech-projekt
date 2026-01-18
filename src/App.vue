@@ -1,5 +1,21 @@
 <script setup lang="ts">
 import logoUrl from '@/assets/logo.svg'
+import { computed, inject, type ShallowRef } from 'vue'
+import type { AuthState } from '@okta/okta-auth-js'
+import { useAuth } from '@okta/okta-vue'
+
+const auth = useAuth()
+const authState = inject<ShallowRef<AuthState>>('okta.authState')
+
+const isAuthed = computed(() => !!authState?.value?.isAuthenticated)
+
+async function login() {
+  await auth.signInWithRedirect()
+}
+
+async function logout() {
+  await auth.signOut()
+}
 </script>
 
 <template>
@@ -12,7 +28,8 @@ import logoUrl from '@/assets/logo.svg'
         </RouterLink>
 
         <div class="flex items-center gap-2">
-          <!-- room for later: login, theme toggle, etc. -->
+          <button v-if="isAuthed" class="btn ghost" @click="logout">Logout</button>
+          <button v-else class="btn" @click="login">Login</button>
         </div>
       </div>
     </header>

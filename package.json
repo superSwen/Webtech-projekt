@@ -19,6 +19,8 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@okta/okta-auth-js": "^7.14.1",
+    "@okta/okta-vue": "^5.8.0",
     "axios": "^1.7.9",
     "vue": "^3.5.22",
     "vue-router": "^4.5.1"

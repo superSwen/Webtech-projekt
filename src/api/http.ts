@@ -1,4 +1,6 @@
 import axios from 'axios'
+import type { AccessToken } from '@okta/okta-auth-js'
+import { oktaAuth } from '@/utils/okta'
 
 const baseURL =
   import.meta.env.VITE_API_BASE?.toString().trim() ||
@@ -8,21 +10,20 @@ export const api = axios.create({
   baseURL,
   headers: { 'Content-Type': 'application/json' }
 })
-api.interceptors.request.use((config) => {
-  console.debug('[API →]', config.method?.toUpperCase(), (config.baseURL || '') + (config.url || ''), {
-    params: config.params,
-    data: config.data
-  })
+
+api.interceptors.request.use(async (config) => {
+  const token = (await oktaAuth.tokenManager.get('accessToken')) as AccessToken | undefined
+
+  if (token?.accessToken) {
+    config.headers = config.headers ?? {}
+    config.headers.Authorization = `Bearer ${token.accessToken}`
+  }
+
   return config
 })
 
 api.interceptors.response.use(
-  (res) => {
-    console.debug('[API ←]', res.status, res.config.url, res.data)
-    return res
-  },
-  (err) => {
-    console.error('[API ✖]', err?.response?.status, err?.config?.url, err?.response?.data || err.message)
-    return Promise.reject(err)
-  }
+  (res) => res,
+  (err) => Promise.reject(err)
 )
+
