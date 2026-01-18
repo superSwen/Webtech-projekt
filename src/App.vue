@@ -1,20 +1,21 @@
 <script setup lang="ts">
 import logoUrl from '@/assets/logo.svg'
-import { computed, inject, type ShallowRef } from 'vue'
-import type { AuthState } from '@okta/okta-auth-js'
-import { useAuth } from '@okta/okta-vue'
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { clearSession, session } from '@/auth/session'
 
-const auth = useAuth()
-const authState = inject<ShallowRef<AuthState>>('okta.authState')
+const router = useRouter()
 
-const isAuthed = computed(() => !!authState?.value?.isAuthenticated)
+const isAuthed = computed(() => !!session.value?.token)
+const username = computed(() => session.value?.username ?? '')
 
-async function login() {
-  await auth.signInWithRedirect()
+function goLogin() {
+  router.push({ name: 'login' })
 }
 
-async function logout() {
-  await auth.signOut()
+function logout() {
+  clearSession()
+  router.push({ name: 'login' })
 }
 </script>
 
@@ -24,12 +25,18 @@ async function logout() {
       <div class="container-app flex items-center justify-between py-3">
         <RouterLink to="/" class="flex items-center gap-3">
           <img class="h-11 w-auto" :src="logoUrl" alt="Movie / Series Tracker" />
-
         </RouterLink>
 
         <div class="flex items-center gap-2">
-          <button v-if="isAuthed" class="btn ghost" @click="logout">Logout</button>
-          <button v-else class="btn" @click="login">Login</button>
+          <span v-if="isAuthed" class="pill">{{ username }}</span>
+
+          <button v-if="isAuthed" class="btn ghost" @click="logout">
+            Logout
+          </button>
+
+          <button v-else class="btn primary" @click="goLogin">
+            Login
+          </button>
         </div>
       </div>
     </header>
@@ -43,4 +50,3 @@ async function logout() {
     </main>
   </div>
 </template>
-

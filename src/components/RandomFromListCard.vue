@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import type { FilmDto, SerieDto } from '@/types/media'
+import { getToken } from '@/auth/session'
+
 
 type Mode = 'any' | 'movie' | 'series'
 type PickItem =
@@ -110,9 +112,14 @@ async function fetchOmdbProxy(params: { i?: string; t?: string }): Promise<OmdbD
 
     const url = `${normalizeBase(base)}/api/omdb?${qs.toString()}`
 
+    const token = getToken()
+
     const res = await fetch(url, {
       signal: abortCtrl.signal,
-      headers: { Accept: 'application/json' },
+      headers: {
+        Accept: 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      }
     })
 
     if (!res.ok) {

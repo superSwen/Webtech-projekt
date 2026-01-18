@@ -42,7 +42,10 @@ const serieFormError = ref<string | null>(null)
 const filmFieldErrors = ref<FieldErrors>({})
 const serieFieldErrors = ref<FieldErrors>({})
 
+const filmResetKey = ref(0)
+const serieResetKey = ref(0)
 const refreshKey = ref(0)
+
 
 //delete FUnktion
 
@@ -139,20 +142,16 @@ async function onSubmitFilm(payload: FilmCreateUpdate) {
     } else {
       const created = await createFilm(payload)
       films.value = [...films.value, created]
+      filmResetKey.value++   // ✅ THIS is the missing piece
     }
 
-    /** ✅ Clear errors after successful submit */
     filmFieldErrors.value = {}
     filmFormError.value = null
-
     refreshKey.value++
   } catch (e: any) {
     const fe = extractFieldErrors(e)
-    if (fe) {
-      filmFieldErrors.value = fe
-    } else {
-      filmFormError.value = e?.response?.data?.message ?? e?.message ?? String(e)
-    }
+    if (fe) filmFieldErrors.value = fe
+    else filmFormError.value = e?.response?.data?.message ?? e?.message ?? String(e)
   } finally {
     busy.value = false
   }
@@ -172,6 +171,7 @@ async function onSubmitSerie(payload: SerieCreateUpdate) {
     } else {
       const created = await createSerie(payload)
       series.value = [...series.value, created]
+      serieResetKey.value++
     }
 
     /** ✅ Clear errors after successful submit */
@@ -215,6 +215,20 @@ function openFilm(item: FilmDto) {
 function openSerie(item: SerieDto) {
   router.push({ name: 'details', params: { kind: 'series', id: String(item.id) } })
 }
+
+
+function onFilmCancel() {
+  editingFilm.value = null
+  filmFieldErrors.value = {}
+  filmFormError.value = null
+}
+
+function onSerieCancel() {
+  editingSerie.value = null
+  serieFieldErrors.value = {}
+  serieFormError.value = null
+}
+
 </script>
 
 <template>
@@ -253,9 +267,11 @@ function openSerie(item: SerieDto) {
               :busy="busy"
               :error="filmFormError"
               :fieldErrors="filmFieldErrors"
+              :resetKey="filmResetKey"
               @submit="onSubmitFilm"
-              @cancel="editingFilm = null"
+              @cancel="onFilmCancel"
             />
+
             <FilmList
               :items="films"
               :busy="busy"
@@ -271,8 +287,9 @@ function openSerie(item: SerieDto) {
               :busy="busy"
               :error="serieFormError"
               :fieldErrors="serieFieldErrors"
+              :resetKey="serieResetKey"
               @submit="onSubmitSerie"
-              @cancel="editingSerie = null"
+              @cancel="onSerieCancel"
             />
             <SerieList
               :items="series"

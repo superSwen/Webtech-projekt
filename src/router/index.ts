@@ -1,16 +1,14 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
 import DetailsView from '@/views/DetailsView.vue'
-
-import { LoginCallback, navigationGuard } from '@okta/okta-vue'
+import LoginView from '@/views/LoginView.vue'
+import { isLoggedIn } from '@/auth/session'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    // ✅ Okta will redirect here after login
-    { path: '/login/callback', component: LoginCallback },
+    { path: '/login', name: 'login', component: LoginView },
 
-    // ✅ Protect your app routes
     { path: '/', name: 'home', component: HomeView, meta: { requiresAuth: true } },
 
     {
@@ -23,7 +21,12 @@ const router = createRouter({
   ]
 })
 
-// ✅ This enforces login for routes with meta.requiresAuth
-router.beforeEach(navigationGuard)
+router.beforeEach((to) => {
+  if (to.name === 'login' && isLoggedIn()) return { name: 'home' }
+
+  if (to.meta.requiresAuth && !isLoggedIn()) {
+    return { name: 'login', query: { redirect: to.fullPath } }
+  }
+})
 
 export default router

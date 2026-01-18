@@ -1,6 +1,5 @@
 import axios from 'axios'
-import type { AccessToken } from '@okta/okta-auth-js'
-import { oktaAuth } from '@/utils/okta'
+import { clearSession, getToken } from '@/auth/session'
 
 const baseURL =
   import.meta.env.VITE_API_BASE?.toString().trim() ||
@@ -11,19 +10,23 @@ export const api = axios.create({
   headers: { 'Content-Type': 'application/json' }
 })
 
-api.interceptors.request.use(async (config) => {
-  const token = (await oktaAuth.tokenManager.get('accessToken')) as AccessToken | undefined
-
-  if (token?.accessToken) {
+api.interceptors.request.use((config) => {
+  const token = getToken()
+  if (token) {
     config.headers = config.headers ?? {}
-    config.headers.Authorization = `Bearer ${token.accessToken}`
+    config.headers.Authorization = `Bearer ${token}`
   }
-
   return config
 })
 
 api.interceptors.response.use(
   (res) => res,
-  (err) => Promise.reject(err)
+  (err) => {
+    if (err?.response?.status === 401) {
+      clearSession()
+      // avoid router import cycles; hard redirect is fine
+      if (window.location.pathname !== '/login') window.location.href = '/login'
+    }
+    return Promise.reject(err)
+  }
 )
-
