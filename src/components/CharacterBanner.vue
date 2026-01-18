@@ -54,7 +54,7 @@ function hasPoster() {
   filter: drop-shadow(0 14px 28px rgba(0,0,0,0.75));
 }
 
-/* Verlaufs-Fade: lässt es wie freigestellt wirken */
+/* Verlaufs-Fadeee: lässt es wie freigestellt wirken */
 .fade {
   pointer-events: none;
   position: absolute;
