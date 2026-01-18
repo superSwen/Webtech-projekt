@@ -9,6 +9,7 @@ const props = defineProps<{
   busy: boolean
   error: string | null
   fieldErrors: FieldErrors
+  resetKey: number
 }>()
 
 const emit = defineEmits<{
@@ -61,6 +62,12 @@ watch(
   { immediate: true }
 )
 
+watch(
+  () => props.resetKey,
+  () => {
+    if (!props.editing) resetForm()
+  }
+)
 const header = computed(() => (props.editing ? 'Serie bearbeiten' : 'Neue Serie anlegen'))
 const submitLabel = computed(() => (props.editing ? 'Änderungen speichern' : 'Serie speichern'))
 
@@ -69,6 +76,24 @@ const titleOk = computed(() => title.value.trim().length > 0)
 const seasonOk = computed(() => Number.isInteger(season.value) && (season.value ?? 0) >= 1)
 const episodeOk = computed(() => Number.isInteger(episode.value) && (episode.value ?? 0) >= 1)
 const minutesOk = computed(() => Number.isInteger(minutes.value) && (minutes.value ?? 0) >= 1)
+
+
+function resetForm() {
+  title.value = ''
+  season.value = null
+  episode.value = null
+  notes.value = ''
+  imdbId.value = null
+
+  results.value = []
+  show.value = false
+  searching.value = false
+
+  touched.title = false
+  touched.season = false
+  touched.episode = false
+  touched.notes = false
+}
 
 function fieldMsg(name: keyof FieldErrors) {
   return props.fieldErrors?.[name] ?? null

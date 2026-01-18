@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { clearSession, getToken } from '@/auth/session'
 
 const baseURL =
   import.meta.env.VITE_API_BASE?.toString().trim() ||
@@ -8,21 +9,24 @@ export const api = axios.create({
   baseURL,
   headers: { 'Content-Type': 'application/json' }
 })
+
 api.interceptors.request.use((config) => {
-  console.debug('[API →]', config.method?.toUpperCase(), (config.baseURL || '') + (config.url || ''), {
-    params: config.params,
-    data: config.data
-  })
+  const token = getToken()
+  if (token) {
+    config.headers = config.headers ?? {}
+    config.headers.Authorization = `Bearer ${token}`
+  }
   return config
 })
 
 api.interceptors.response.use(
-  (res) => {
-    console.debug('[API ←]', res.status, res.config.url, res.data)
-    return res
-  },
+  (res) => res,
   (err) => {
-    console.error('[API ✖]', err?.response?.status, err?.config?.url, err?.response?.data || err.message)
+    if (err?.response?.status === 401) {
+      clearSession()
+      // avoid router import cycles; hard redirect is fine
+      if (window.location.pathname !== '/login') window.location.href = '/login'
+    }
     return Promise.reject(err)
   }
 )

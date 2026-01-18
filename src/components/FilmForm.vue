@@ -9,6 +9,8 @@ const props = defineProps<{
   busy: boolean
   error: string | null
   fieldErrors: FieldErrors
+  resetKey: number
+
 }>()
 
 const emit = defineEmits<{
@@ -52,12 +54,38 @@ watch(
   { immediate: true }
 )
 
+watch(
+  () => props.resetKey,
+  () => {
+    // only reset the fields when creating (not while editing)
+    if (!props.editing) resetForm()
+  }
+)
+
 const header = computed(() => (props.editing ? 'Film bearbeiten' : 'Neuen Film anlegen'))
 const submitLabel = computed(() => (props.editing ? 'Änderungen speichern' : 'Film speichern'))
 
 // simple client-side rules (mirror your backend)
 const titleOk = computed(() => title.value.trim().length > 0)
 const minutesOk = computed(() => Number.isInteger(minutes.value) && (minutes.value ?? 0) >= 1)
+
+
+function resetForm() {
+  title.value = ''
+  minutes.value = null
+  notes.value = ''
+  imdbId.value = null
+
+  // clear OMDb UI state
+  results.value = []
+  show.value = false
+  searching.value = false
+
+  // reset validation UI
+  touched.title = false
+  touched.minutes = false
+  touched.notes = false
+}
 
 function fieldMsg(name: keyof FieldErrors) {
   return props.fieldErrors?.[name] ?? null
@@ -186,7 +214,7 @@ function onCancel() {
       {{ fieldMsg('title') }}
     </p>
 
-    <p v-if="imdbId" class="mt-2 text-xs text-white/50">
+    <p v-if="imdbId && title.trim().length > 0" class="mt-2 text-xs text-white/50">
       IMDB-ID: <span class="font-mono text-white/70">{{ imdbId }}</span>
     </p>
 

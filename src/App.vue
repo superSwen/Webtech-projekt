@@ -1,5 +1,22 @@
 <script setup lang="ts">
 import logoUrl from '@/assets/logo.svg'
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { clearSession, session } from '@/auth/session'
+
+const router = useRouter()
+
+const isAuthed = computed(() => !!session.value?.token)
+const username = computed(() => session.value?.username ?? '')
+
+function goLogin() {
+  router.push({ name: 'login' })
+}
+
+function logout() {
+  clearSession()
+  router.push({ name: 'login' })
+}
 </script>
 
 <template>
@@ -8,11 +25,18 @@ import logoUrl from '@/assets/logo.svg'
       <div class="container-app flex items-center justify-between py-3">
         <RouterLink to="/" class="flex items-center gap-3">
           <img class="h-11 w-auto" :src="logoUrl" alt="Movie / Series Tracker" />
-
         </RouterLink>
 
         <div class="flex items-center gap-2">
-          <!-- room for later: login, theme toggle, etc. -->
+          <span v-if="isAuthed" class="pill">{{ username }}</span>
+
+          <button v-if="isAuthed" class="btn ghost" @click="logout">
+            Logout
+          </button>
+
+          <button v-else class="btn primary" @click="goLogin">
+            Login
+          </button>
         </div>
       </div>
     </header>
@@ -26,4 +50,3 @@ import logoUrl from '@/assets/logo.svg'
     </main>
   </div>
 </template>
-
