@@ -1,7 +1,7 @@
 import { api } from './http'
 import type { FilmDto, SerieDto, FilmCreateUpdate, SerieCreateUpdate } from '@/types/media'
 
-// --- FILMS ---
+// --- FILMSSS ---
 export async function getFilms(): Promise<FilmDto[]> {
   const res = await api.get<FilmDto[]>('/api/films')
   return res.data
