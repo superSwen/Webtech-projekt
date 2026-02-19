@@ -7,16 +7,13 @@ import FilmList from '@/components/FilmList.vue'
 import SerieForm from '@/components/SerieForm.vue'
 import SerieList from '@/components/SerieList.vue'
 import RandomFromListCard from '@/components/RandomFromListCard.vue'
-
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
-
+import BottomBanner from '@/components/BottomBanner.vue'
+import OthersWatchingBanner from '@/components/OthersWatchingBanner.vue'
 
 import type { FieldErrors } from '@/utils/fieldErrors'
 import { extractFieldErrors } from '@/utils/fieldErrors'
-
-import HeroCharacter from '@/components/HeroCharacter.vue'
-import BottomBanner from '@/components/BottomBanner.vue'
 
 import type { FilmDto, SerieDto, FilmCreateUpdate, SerieCreateUpdate } from '@/types/media'
 import {
@@ -45,9 +42,6 @@ const serieFieldErrors = ref<FieldErrors>({})
 const filmResetKey = ref(0)
 const serieResetKey = ref(0)
 const refreshKey = ref(0)
-
-
-//delete FUnktion
 
 type PendingDelete =
   | { kind: 'film'; item: FilmDto }
@@ -86,10 +80,8 @@ async function confirmDelete() {
       serieFieldErrors.value = {}
       serieFormError.value = null
     }
-
     refreshKey.value++
   } catch (e: any) {
-    // falls löschen fehlschlägt, wenigstens sichtbar machen
     const msg = e?.response?.data?.message ?? e?.message ?? String(e)
     if (p.kind === 'film') filmFormError.value = msg
     else serieFormError.value = msg
@@ -97,7 +89,6 @@ async function confirmDelete() {
     busy.value = false
   }
 }
-
 
 async function loadAll() {
   loading.value = true
@@ -116,13 +107,11 @@ async function loadAll() {
 
 onMounted(loadAll)
 
-/** ✅ Clear errors when entering edit mode */
 function startEditFilm(item: FilmDto) {
   editingFilm.value = item
   filmFieldErrors.value = {}
   filmFormError.value = null
 }
-
 function startEditSerie(item: SerieDto) {
   editingSerie.value = item
   serieFieldErrors.value = {}
@@ -142,11 +131,8 @@ async function onSubmitFilm(payload: FilmCreateUpdate) {
     } else {
       const created = await createFilm(payload)
       films.value = [...films.value, created]
-      filmResetKey.value++   // ✅ THIS is the missing piece
+      filmResetKey.value++
     }
-
-    filmFieldErrors.value = {}
-    filmFormError.value = null
     refreshKey.value++
   } catch (e: any) {
     const fe = extractFieldErrors(e)
@@ -156,7 +142,6 @@ async function onSubmitFilm(payload: FilmCreateUpdate) {
     busy.value = false
   }
 }
-
 
 async function onSubmitSerie(payload: SerieCreateUpdate) {
   serieFormError.value = null
@@ -173,37 +158,11 @@ async function onSubmitSerie(payload: SerieCreateUpdate) {
       series.value = [...series.value, created]
       serieResetKey.value++
     }
-
-    /** ✅ Clear errors after successful submit */
-    serieFieldErrors.value = {}
-    serieFormError.value = null
-
     refreshKey.value++
   } catch (e: any) {
     const fe = extractFieldErrors(e)
-    if (fe) {
-      serieFieldErrors.value = fe
-    } else {
-      serieFormError.value = e?.response?.data?.message ?? e?.message ?? String(e)
-    }
-  } finally {
-    busy.value = false
-  }
-}
-
-async function onDeleteSerie(item: SerieDto) {
-  if (!confirm(`Serie wirklich löschen?\n\n"${item.title}"`)) return
-  busy.value = true
-  try {
-    await deleteSerie(item.id)
-    series.value = series.value.filter((x) => x.id !== item.id)
-    if (editingSerie.value?.id === item.id) editingSerie.value = null
-
-    // optional: also clear serie errors when deleting something
-    serieFieldErrors.value = {}
-    serieFormError.value = null
-
-    refreshKey.value++
+    if (fe) serieFieldErrors.value = fe
+    else serieFormError.value = e?.response?.data?.message ?? e?.message ?? String(e)
   } finally {
     busy.value = false
   }
@@ -216,114 +175,100 @@ function openSerie(item: SerieDto) {
   router.push({ name: 'details', params: { kind: 'series', id: String(item.id) } })
 }
 
-
 function onFilmCancel() {
   editingFilm.value = null
   filmFieldErrors.value = {}
   filmFormError.value = null
 }
-
 function onSerieCancel() {
   editingSerie.value = null
   serieFieldErrors.value = {}
   serieFormError.value = null
 }
-
 </script>
 
 <template>
   <div class="space-y-6">
-    <!-- header card -->
-    <section class="card">
-      <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <h1 class="text-3xl font-extrabold tracking-tight">Movie / Series Tracker</h1>
-          <p class="mt-1 text-sm text-white/60">
-            Speichere Filme & Serien, zieh dir Details von OMDb und Trailer von TMDB.
-          </p>
-        </div>
+    <!-- ✅ ganz oben: nur Series-Personal-Banner -->
+    <BottomBanner :refreshKey="refreshKey" position="top" />
 
-        <div class="flex items-center gap-3">
-          <HeroCharacter class="hidden sm:block" />
-          <button class="btn" @click="loadAll" :disabled="loading || busy">
-            Refresh
-          </button>
-        </div>
+    <!-- Refresh Button bleibt, aber ohne diese fette Titel-Kachel -->
+    <section class="flex items-center justify-end">
+    </section>
+
+    <div v-if="loading">
+      <div class="alert info">Lade Daten…</div>
+    </div>
+    <div v-else-if="error">
+      <div class="alert error">Backend/API Fehler: {{ error }}</div>
+    </div>
+
+    <!-- forms + lists -->
+    <section class="grid gap-6 lg:grid-cols-2" v-if="!loading">
+      <div class="space-y-6">
+        <FilmForm
+          :editing="editingFilm"
+          :busy="busy"
+          :error="filmFormError"
+          :fieldErrors="filmFieldErrors"
+          :resetKey="filmResetKey"
+          @submit="onSubmitFilm"
+          @cancel="onFilmCancel"
+        />
+
+        <FilmList
+          :items="films"
+          :busy="busy"
+          @edit="startEditFilm"
+          @remove="askDeleteFilm"
+          @open="openFilm"
+        />
       </div>
 
-      <div class="mt-4" v-if="loading">
-        <div class="alert info">Lade Daten…</div>
-      </div>
-      <div class="mt-4" v-else-if="error">
-        <div class="alert error">Backend/API Fehler: {{ error }}</div>
+      <div class="space-y-6">
+        <SerieForm
+          :editing="editingSerie"
+          :busy="busy"
+          :error="serieFormError"
+          :fieldErrors="serieFieldErrors"
+          :resetKey="serieResetKey"
+          @submit="onSubmitSerie"
+          @cancel="onSerieCancel"
+        />
+
+        <SerieList
+          :items="series"
+          :busy="busy"
+          @edit="startEditSerie"
+          @remove="askDeleteSerie"
+          @open="openSerie"
+        />
       </div>
     </section>
 
-        <!-- forms + lists -->
-        <section class="grid gap-6 lg:grid-cols-2" v-if="!loading">
-          <div class="space-y-6">
-            <FilmForm
-              :editing="editingFilm"
-              :busy="busy"
-              :error="filmFormError"
-              :fieldErrors="filmFieldErrors"
-              :resetKey="filmResetKey"
-              @submit="onSubmitFilm"
-              @cancel="onFilmCancel"
-            />
+    <ConfirmDialog
+      :open="pendingDelete !== null"
+      :title="pendingDelete?.kind === 'film' ? 'Film löschen?' : 'Serie löschen?'"
+      :message="pendingDelete ? `Willst du „${pendingDelete.item.title}“ wirklich löschen?` : ''"
+      confirm-text="Löschen"
+      cancel-text="Abbrechen"
+      :danger="true"
+      @close="cancelDelete"
+      @confirm="confirmDelete"
+    />
 
-            <FilmList
-              :items="films"
-              :busy="busy"
-              @edit="startEditFilm"
-              @remove="askDeleteFilm"
-              @open="openFilm"
-            />
-          </div>
+    <!-- ✅ Random Card -->
+    <RandomFromListCard
+      v-if="!loading"
+      :films="films"
+      :series="series"
+      :busy="busy"
+      @openFilm="openFilm"
+      @openSerie="openSerie"
+    />
 
-          <div class="space-y-6">
-            <SerieForm
-              :editing="editingSerie"
-              :busy="busy"
-              :error="serieFormError"
-              :fieldErrors="serieFieldErrors"
-              :resetKey="serieResetKey"
-              @submit="onSubmitSerie"
-              @cancel="onSerieCancel"
-            />
-            <SerieList
-              :items="series"
-              :busy="busy"
-              @edit="startEditSerie"
-              @remove="askDeleteSerie"
-              @open="openSerie"
-            />
-          </div>
-        </section>
-
-        <!-- Delete CArd -->
-        <ConfirmDialog
-          :open="pendingDelete !== null"
-          :title="pendingDelete?.kind === 'film' ? 'Film löschen?' : 'Serie löschen?'"
-          :message="pendingDelete ? `Willst du „${pendingDelete.item.title}“ wirklich löschen?` : ''"
-          confirm-text="Löschen"
-          cancel-text="Abbrechen"
-          :danger="true"
-          @close="cancelDelete"
-          @confirm="confirmDelete"
-        />
-
-        <!-- Random Card -->
-        <RandomFromListCard
-          v-if="!loading"
-          :films="films"
-          :series="series"
-          :busy="busy"
-          @openFilm="openFilm"
-          @openSerie="openSerie"
-        />
-
-        <BottomBanner :refreshKey="refreshKey" />
-
+    <!-- ✅ ganz unten -->
+    <OthersWatchingBanner :refreshKey="refreshKey" />
   </div>
 </template>
+

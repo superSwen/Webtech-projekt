@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import logoUrl from '@/assets/logoHome.png'
+import HeroCharacter from '@/components/HeroCharacter.vue'
+
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { clearSession, session } from '@/auth/session'
@@ -21,31 +23,23 @@ function logout() {
 
 <template>
   <div class="min-h-screen">
-   <header
-     class="sticky top-0 z-20 h-[96px] border-b border-white/10 bg-zinc-950/60 backdrop-blur"
-   >
-     <div class="container-app flex h-full items-center justify-between">
-       <RouterLink to="/" class="flex items-center">
-         <img class="h-[120px] w-auto block" :src="logoUrl" alt="Movie / Series Tracker" />
+    <header class="sticky top-0 z-20 h-[96px] border-b border-white/10 bg-zinc-950/60 backdrop-blur">
+      <div class="container-app grid h-full grid-cols-3 items-center">
+        <RouterLink to="/" class="flex items-center justify-self-start">
+          <img class="h-[72px] w-auto block sm:h-[96px]" :src="logoUrl" alt="Movie / Series Tracker" />
+        </RouterLink>
 
-       </RouterLink>
+        <div class="justify-self-center">
+          <HeroCharacter class="hidden sm:block" size="header" />
+        </div>
 
-       <div class="flex items-center gap-2">
-         <span v-if="isAuthed" class="pill">{{ username }}</span>
-
-         <button v-if="isAuthed" class="btn ghost" @click="logout">
-           Logout
-         </button>
-
-         <button v-else class="btn primary" @click="goLogin">
-           Login
-         </button>
-       </div>
-     </div>
-   </header>
-
-
-
+        <div class="flex items-center gap-2 justify-self-end">
+          <span v-if="isAuthed" class="pill">{{ username }}</span>
+          <button v-if="isAuthed" class="btn ghost" @click="logout">Logout</button>
+          <button v-else class="btn primary" @click="goLogin">Login</button>
+        </div>
+      </div>
+    </header>
 
     <main class="container-app py-6">
       <RouterView v-slot="{ Component }">

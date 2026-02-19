@@ -167,7 +167,7 @@ function onCancel() {
     <div class="flex items-start justify-between gap-3">
       <div>
         <h2 class="cardTitle">{{ header }}</h2>
-        <p class="mt-1 text-xs text-white/50">Tipp: 2+ Zeichen tippen → OMDb Vorschläge</p>
+        <p class="mt-1 text-xs text-white/50">Gib mindestens 3 Zeichen ein, um einen Film zu suchen.</p>
       </div>
       <span v-if="editing" class="pill">Edit</span>
     </div>

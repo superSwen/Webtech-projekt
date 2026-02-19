@@ -240,17 +240,18 @@ onBeforeUnmount(() => abortPending())
 </script>
 
 <template>
-  <div class="flex justify-end">
+  <div class="w-full">
     <button
-      class="btn ghost"
+      class="btn ghost w-full justify-center"
       @click="toggleOpen"
       :disabled="busy || !hasEntries"
       :title="open ? 'Random schließen' : 'Random anzeigen'"
     >
       <span class="text-lg leading-none">🎲</span>
-      <span class="ml-2 hidden sm:inline">{{ open ? 'Random schließen' : 'Random' }}</span>
+      <span class="ml-2">{{ open ? 'Random schließen' : 'Random' }}</span>
     </button>
   </div>
+
 
   <section v-if="open" class="card">
     <header class="cardHead">
@@ -341,9 +342,7 @@ onBeforeUnmount(() => abortPending())
           Keine OMDb Beschreibung vorhanden (evtl. fehlt imdbId im Eintrag).
         </p>
 
-        <p class="mt-3 text-xs text-white/40">
-          Tipp: Wenn du immer Poster/Plot willst, stelle sicher, dass beim Anlegen ein imdbId gesetzt ist.
-        </p>
+
       </div>
     </div>
   </section>
