@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import logoUrl from '@/assets/logoHome.png'
 import HeroCharacter from '@/components/HeroCharacter.vue'
+import FoldNavLink from "@/components/FoldNavLink.vue";
+
 
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
@@ -26,11 +28,20 @@ function logout() {
     <header class="sticky top-0 z-20 h-[96px] border-b border-white/10 bg-zinc-950/60 backdrop-blur">
       <div class="container-app grid h-full grid-cols-3 items-center">
         <RouterLink to="/" class="flex items-center justify-self-start">
-          <img class="h-[72px] w-auto block sm:h-[96px]" :src="logoUrl" alt="Movie / Series Tracker" />
+          <img
+            class="h-[72px] w-auto block sm:h-[96px]"
+            :src="logoUrl"
+            alt="Movie / Series Tracker"
+          />
         </RouterLink>
 
-        <div class="justify-self-center">
+        <!-- extra tab buttons-->
+        <div class="justify-self-center flex items-center gap-4">
+          <FoldNavLink side="left" to="/collection" label="Collection" />
+
           <HeroCharacter class="hidden sm:block" size="header" />
+
+          <FoldNavLink side="right" to="/" label="Hauptseite" />
         </div>
 
         <div class="flex items-center gap-2 justify-self-end">
@@ -50,3 +61,4 @@ function logout() {
     </main>
   </div>
 </template>
+

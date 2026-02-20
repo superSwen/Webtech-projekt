@@ -17,6 +17,14 @@ const router = createRouter({
       component: DetailsView,
       props: true,
       meta: { requiresAuth: true }
+    },
+
+    {
+      path: "/collection",
+      name: "collection",
+      component: () => import("@/views/CollectionView.vue"),
+      //muss der User dafür eingeloggt sein?
+      meta: { requiresAuth: true },
     }
   ]
 })
