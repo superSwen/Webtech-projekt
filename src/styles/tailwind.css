@@ -102,7 +102,7 @@
   .text-shadow { text-shadow: 0 10px 40px rgba(0,0,0,0.45); }
 }
 
-/* Route + list animations (cheap but effective) */
+/* Route + list animations, shine sweep currently not in use */
 .list-enter-active, .list-leave-active { transition: all 180ms ease; }
 .list-enter-from, .list-leave-to { opacity: 0; transform: translateY(8px); }
 

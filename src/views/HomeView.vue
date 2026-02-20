@@ -3,9 +3,8 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import FilmForm from '@/components/FilmForm.vue'
-import FilmList from '@/components/FilmList.vue'
 import SerieForm from '@/components/SerieForm.vue'
-import SerieList from '@/components/SerieList.vue'
+import SavedCoversShelf from '@/components/SavedCoversShelf.vue'
 import RandomFromListCard from '@/components/RandomFromListCard.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
@@ -189,12 +188,7 @@ function onSerieCancel() {
 
 <template>
   <div class="space-y-6">
-    <!-- ✅ ganz oben: nur Series-Personal-Banner -->
     <BottomBanner :refreshKey="refreshKey" position="top" />
-
-    <!-- Refresh Button bleibt, aber ohne diese fette Titel-Kachel -->
-    <section class="flex items-center justify-end">
-    </section>
 
     <div v-if="loading">
       <div class="alert info">Lade Daten…</div>
@@ -203,48 +197,40 @@ function onSerieCancel() {
       <div class="alert error">Backend/API Fehler: {{ error }}</div>
     </div>
 
-    <!-- forms + lists -->
     <section class="grid gap-6 lg:grid-cols-2" v-if="!loading">
-      <div class="space-y-6">
-        <FilmForm
-          :editing="editingFilm"
-          :busy="busy"
-          :error="filmFormError"
-          :fieldErrors="filmFieldErrors"
-          :resetKey="filmResetKey"
-          @submit="onSubmitFilm"
-          @cancel="onFilmCancel"
-        />
+      <FilmForm
+        :editing="editingFilm"
+        :busy="busy"
+        :error="filmFormError"
+        :fieldErrors="filmFieldErrors"
+        :resetKey="filmResetKey"
+        @submit="onSubmitFilm"
+        @cancel="onFilmCancel"
+      />
 
-        <FilmList
-          :items="films"
-          :busy="busy"
-          @edit="startEditFilm"
-          @remove="askDeleteFilm"
-          @open="openFilm"
-        />
-      </div>
-
-      <div class="space-y-6">
-        <SerieForm
-          :editing="editingSerie"
-          :busy="busy"
-          :error="serieFormError"
-          :fieldErrors="serieFieldErrors"
-          :resetKey="serieResetKey"
-          @submit="onSubmitSerie"
-          @cancel="onSerieCancel"
-        />
-
-        <SerieList
-          :items="series"
-          :busy="busy"
-          @edit="startEditSerie"
-          @remove="askDeleteSerie"
-          @open="openSerie"
-        />
-      </div>
+      <SerieForm
+        :editing="editingSerie"
+        :busy="busy"
+        :error="serieFormError"
+        :fieldErrors="serieFieldErrors"
+        :resetKey="serieResetKey"
+        @submit="onSubmitSerie"
+        @cancel="onSerieCancel"
+      />
     </section>
+
+    <SavedCoversShelf
+      v-if="!loading"
+      :films="films"
+      :series="series"
+      :busy="busy"
+      @openFilm="openFilm"
+      @openSerie="openSerie"
+      @editFilm="startEditFilm"
+      @editSerie="startEditSerie"
+      @removeFilm="askDeleteFilm"
+      @removeSerie="askDeleteSerie"
+    />
 
     <ConfirmDialog
       :open="pendingDelete !== null"
@@ -257,7 +243,6 @@ function onSerieCancel() {
       @confirm="confirmDelete"
     />
 
-    <!-- ✅ Random Card -->
     <RandomFromListCard
       v-if="!loading"
       :films="films"
@@ -267,8 +252,6 @@ function onSerieCancel() {
       @openSerie="openSerie"
     />
 
-    <!-- ✅ ganz unten -->
     <OthersWatchingBanner :refreshKey="refreshKey" />
   </div>
 </template>
-

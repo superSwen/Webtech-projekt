@@ -3,7 +3,8 @@ export type FilmDto = {
   title: string
   minutes?: number | null
   notes?: string | null
-  imdbId?: string | null // ✅ neu
+  imdbId?: string | null
+  posterUrl?: string | null // ✅ cached poster URL from backend
 }
 
 export type SerieDto = {
@@ -13,14 +14,15 @@ export type SerieDto = {
   episode?: number | null
   minutes?: number | null
   notes?: string | null
-  imdbId?: string | null // ✅ neu
+  imdbId?: string | null
+  posterUrl?: string | null // ✅ cached poster URL from backend
 }
 
 export type FilmCreateUpdate = {
   title: string
   minutes?: number | null
   notes?: string | null
-  imdbId?: string | null // ✅ neu
+  imdbId?: string | null
 }
 
 export type SerieCreateUpdate = {
@@ -29,5 +31,5 @@ export type SerieCreateUpdate = {
   episode?: number | null
   minutes?: number | null
   notes?: string | null
-  imdbId?: string | null // ✅ neu
+  imdbId?: string | null
 }

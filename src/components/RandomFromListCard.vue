@@ -315,7 +315,7 @@ onBeforeUnmount(() => abortPending())
     </p>
 
     <div v-if="error" class="alert error mt-3">{{ error }}</div>
-    <div v-else-if="loading" class="alert info mt-3">Lade OMDb Infos…</div>
+    <div v-else-if="loading" class="alert info mt-3">Lade DB Infos…</div>
 
     <div v-if="pick" class="mt-4 flex flex-col gap-4 sm:flex-row">
       <div class="shrink-0">
@@ -339,7 +339,7 @@ onBeforeUnmount(() => abortPending())
           {{ plot }}
         </p>
         <p v-else class="mt-3 text-sm text-white/50">
-          Keine OMDb Beschreibung vorhanden (evtl. fehlt imdbId im Eintrag).
+          *Leider ist keine Beschreibung vorhanden :(
         </p>
 
 

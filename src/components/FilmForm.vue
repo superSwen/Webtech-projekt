@@ -163,7 +163,7 @@ function onCancel() {
 </script>
 
 <template>
-  <section class="card">
+  <section class="card h-full flex flex-col">
     <div class="flex items-start justify-between gap-3">
       <div>
         <h2 class="cardTitle">{{ header }}</h2>
@@ -248,7 +248,7 @@ function onCancel() {
       {{ fieldMsg('notes') }}
     </p>
 
-    <div class="mt-5 flex flex-wrap gap-2">
+    <div class="mt-auto pt-5 flex flex-wrap gap-2">
       <button class="btn primary" @click="onSubmit" :disabled="!canSubmit">
         {{ submitLabel }}
       </button>
