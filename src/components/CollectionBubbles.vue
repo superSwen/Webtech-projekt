@@ -1,4 +1,4 @@
-+<script setup lang="ts">
+<script setup lang="ts">
 import { api } from '@/api/http'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -50,7 +50,7 @@ async function refreshPoster(it: BubbleItem) {
 // --- simulation (non-reactive for speed) ---
 let width = 0
 let height = 0
-let radius = 56
+let radius = 72
 let gap = 10
 
 const states = new Map<string, BubbleState>()
@@ -67,17 +67,16 @@ function clamp(n: number, a: number, b: number) {
   return Math.max(a, Math.min(b, n))
 }
 
+// Bigger bubbles (your request)
 function computeRadius(n: number, w: number, h: number) {
   if (!n || w <= 0 || h <= 0) return 72
 
   const area = w * h
   const packing = 0.62
 
-  // SIZE BOOST (bigger bubbles overall)
-  const sizeBoost = 1.1
+  const sizeBoost = 1.35
   const r = Math.sqrt((area * packing) / (n * Math.PI)) * sizeBoost
 
-  // allow bigger maximums
   const maxR = Math.min(110, Math.min(w, h) / 5)
   const minR = 34
 
@@ -110,12 +109,12 @@ function sunflowerTargets(n: number, w: number, h: number, r: number) {
 }
 
 function ensureState(key: string) {
-  let st = states.get(key)
-  if (st) return st
+  const existing = states.get(key)
+  if (existing) return existing
 
   const cx = width / 2
   const cy = height / 2
-  st = { key, x: cx, y: cy, vx: 0, vy: 0, tx: cx, ty: cy }
+  const st: BubbleState = { key, x: cx, y: cy, vx: 0, vy: 0, tx: cx, ty: cy }
   states.set(key, st)
   return st
 }
@@ -126,14 +125,21 @@ function layout() {
   if (!n) return
 
   radius = computeRadius(n, width, height)
-  gap = clamp(radius * 0.18, 6, 14)
 
-  const t = sunflowerTargets(n, width, height, radius)
+  // tighter spacing so big bubbles still fit
+  gap = clamp(radius * 0.12, 4, 12)
+
+  const targets = sunflowerTargets(n, width, height, radius)
+
+  // TS-safe indexing (this is what Render was failing on)
   for (let i = 0; i < n; i++) {
     const it = props.items[i]
+    const t = targets[i]
+    if (!it || !t) continue
+
     const st = ensureState(it.key)
-    st.tx = t[i].x
-    st.ty = t[i].y
+    st.tx = t.x
+    st.ty = t.y
   }
 
   for (const it of props.items) {
@@ -155,24 +161,34 @@ function step(dt: number) {
   const damp60 = 0.86
   const damp = Math.pow(damp60, dt * 60)
 
+  // spring toward targets
   for (const it of props.items) {
     const st = ensureState(it.key)
     st.vx += (st.tx - st.x) * spring * dt
     st.vy += (st.ty - st.y) * spring * dt
   }
 
+  // collisions (TS-safe indexing)
   for (let i = 0; i < n; i++) {
-    const a = ensureState(props.items[i].key)
+    const ai = props.items[i]
+    if (!ai) continue
+    const a = ensureState(ai.key)
+
     for (let j = i + 1; j < n; j++) {
-      const b = ensureState(props.items[j].key)
+      const bj = props.items[j]
+      if (!bj) continue
+      const b = ensureState(bj.key)
+
       const dx = b.x - a.x
       const dy = b.y - a.y
       const dist = Math.hypot(dx, dy) || 0.0001
       const overlap = minDist - dist
       if (overlap <= 0) continue
+
       const nx = dx / dist
       const ny = dy / dist
       const push = overlap * repel * dt
+
       a.vx -= nx * push
       a.vy -= ny * push
       b.vx += nx * push
@@ -226,14 +242,16 @@ function loop(t: number) {
   raf = requestAnimationFrame(loop)
 }
 
-function setBubbleEl(key: string, el: Element | null) {
-  if (!el) {
+// Fix Render TS error: template ref may be typed as component instance.
+// We accept unknown and only store HTMLElements.
+function setBubbleEl(key: string, el: unknown) {
+  if (!(el instanceof HTMLElement)) {
     els.delete(key)
     return
   }
-  els.set(key, el as HTMLElement)
-  ;(el as HTMLElement).style.width = `${radius * 2}px`
-  ;(el as HTMLElement).style.height = `${radius * 2}px`
+  els.set(key, el)
+  el.style.width = `${radius * 2}px`
+  el.style.height = `${radius * 2}px`
 }
 
 function pointerPos(ev: PointerEvent) {
@@ -242,23 +260,20 @@ function pointerPos(ev: PointerEvent) {
   return { x: ev.clientX - rect.left, y: ev.clientY - rect.top }
 }
 
-/** Hover-physics: cursor motion pushes nearby bubbles */
+// MUCH less aggressive hover (your request)
 function applyHoverImpulse(p: { x: number; y: number }, dx: number, dy: number) {
-  // ignore tiny jitter
   const mag = Math.abs(dx) + Math.abs(dy)
   if (mag < 2.0) return
 
-  // HARD clamp so fast mouse movement doesn't yeet bubbles
-  const maxStep = 20 // px per event
+  const maxStep = 25
   const cdx = clamp(dx, -maxStep, maxStep)
   const cdy = clamp(dy, -maxStep, maxStep)
 
-  // Make it affect fewer bubbles + MUCH weaker force
   const sigma = clamp(radius * 3.0, 120, 200)
   const inv2s2 = 1 / (2 * sigma * sigma)
 
-  const impulse = 6 // <- was 26, this is the main fix
-  const scale = 0.30 // extra softness
+  const impulse = 20
+  const scale = 0.15
 
   for (const it of props.items) {
     const st = ensureState(it.key)
@@ -375,7 +390,9 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.bubble { will-change: transform; }
+.bubble {
+  will-change: transform;
+}
 .bubbleInner {
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.04),
