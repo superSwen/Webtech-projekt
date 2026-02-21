@@ -113,10 +113,17 @@ function remove(it: TileItem) {
   else emit('removeSerie', it.data)
 }
 
-/** ---------------- poster loading (OMDb proxy) ---------------- */
+/** ---------------- poster backfill (cached in DB) ----------------
+ *
+ * Backend persists `posterUrl` on create/update.
+ * For older entries (created before that existed), we backfill once via:
+ *   POST /api/films/{id}/poster
+ *   POST /api/series/{id}/poster
+ *
+ * This avoids calling /api/omdb from the UI and reduces API calls long-term.
+ */
 
-type OmdbDetail = { Poster?: string; Response?: string; Error?: string }
-const posters = ref<Record<string, string | null>>({}) // key -> url|null
+const posters = ref<Record<string, string | null>>({}) // key -> url|null (only for backfilled results)
 
 const queuedKeys = new Set<string>()
 const inFlight = new Set<string>()
@@ -126,11 +133,14 @@ const MAX_CONCURRENCY = 4
 const PREFETCH_COUNT = 14
 
 function posterFor(it: TileItem) {
-  return posters.value[itemKey(it)] ?? null
+  const cached = (it.data as any)?.posterUrl as string | null | undefined
+  return cached ?? posters.value[itemKey(it)] ?? null
 }
 
 function enqueue(it: TileItem) {
   const k = itemKey(it)
+  // already cached in DB
+  if ((it.data as any)?.posterUrl) return
   if (posters.value[k] !== undefined) return
   if (queuedKeys.has(k) || inFlight.has(k)) return
   queuedKeys.add(k)
@@ -162,19 +172,10 @@ function pump() {
 }
 
 async function fetchPoster(it: TileItem): Promise<string | null> {
-  const imdbId = (it.data as any)?.imdbId as string | null | undefined
-  const title = (it.data.title ?? '').trim()
-
   try {
-    const params: Record<string, string> = {}
-    if (imdbId) params.i = imdbId
-    else if (title) {
-      params.t = title
-      params.type = it.kind === 'film' ? 'movie' : 'series'
-    } else return null
-
-    const { data } = await api.get<OmdbDetail>('/api/omdb', { params })
-    const poster = (data as any)?.Poster
+    const url = it.kind === 'film' ? `/api/films/${it.data.id}/poster` : `/api/series/${it.data.id}/poster`
+    const { data } = await api.post<any>(url)
+    const poster = (data as any)?.posterUrl as string | undefined
     if (!poster || poster === 'N/A') return null
     return poster
   } catch {

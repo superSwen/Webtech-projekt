@@ -245,10 +245,10 @@ onBeforeUnmount(() => abortPending())
       class="btn ghost w-full justify-center"
       @click="toggleOpen"
       :disabled="busy || !hasEntries"
-      :title="open ? 'Random schließen' : 'Random anzeigen'"
+      :title="open ? 'Movie-Roulette schließen' : 'Movie-Roulette anzeigen'"
     >
       <span class="text-lg leading-none">🎲</span>
-      <span class="ml-2">{{ open ? 'Random schließen' : 'Random' }}</span>
+      <span class="ml-2">{{ open ? 'Movie-Roulette schließen' : 'Movie-Roulette' }}</span>
     </button>
   </div>
 
@@ -263,7 +263,7 @@ onBeforeUnmount(() => abortPending())
     </header>
 
     <p v-if="!hasEntries" class="muted mt-3">
-      Noch keine Filme/Serien vorhanden — leg erst etwas an 🙂
+      Noch keine Filme/Serien vorhanden — Leg erstmal Filme oder Serien an 🙂
     </p>
 
     <div v-if="hasEntries" class="mt-3 flex flex-wrap items-center gap-2">
