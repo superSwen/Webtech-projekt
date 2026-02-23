@@ -54,7 +54,7 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="relative left-1/2 right-1/2 w-screen -ml-[50vw] -mr-[50vw]">
+  <div class="w-full">
     <div v-if="loading" class="px-6 py-6">
       <div class="alert info">Lade Collection…</div>
     </div>
@@ -67,8 +67,6 @@ onMounted(load)
       <div class="alert info">Noch keine Einträge gespeichert.</div>
     </div>
 
-    <div v-else class="h-[calc(100dvh-88px)] w-full">
-      <CollectionMosaic :items="items" />
-    </div>
+    <CollectionMosaic v-else :items="items" />
   </div>
 </template>

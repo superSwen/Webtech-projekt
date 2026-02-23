@@ -3,15 +3,17 @@ import logoUrl from '@/assets/logoHome.png'
 import HeroCharacter from '@/components/HeroCharacter.vue'
 import FoldNavLink from "@/components/FoldNavLink.vue";
 
-
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { clearSession, session } from '@/auth/session'
 
 const router = useRouter()
+const route = useRoute()
 
 const isAuthed = computed(() => !!session.value?.token)
 const username = computed(() => session.value?.username ?? '')
+
+const isCollection = computed(() => route.name === 'collection')
 
 function goLogin() {
   router.push({ name: 'login' })
@@ -25,7 +27,10 @@ function logout() {
 
 <template>
   <div class="min-h-screen">
-    <header class="sticky top-0 z-20 h-[96px] border-b border-white/10 bg-zinc-950/60 backdrop-blur">
+    <header
+      class="sticky top-0 z-20 h-[96px] border-b border-white/10 backdrop-blur"
+      :class="isCollection ? 'bg-zinc-950/35' : 'bg-zinc-950/60'"
+    >
       <div class="container-app grid h-full grid-cols-3 items-center">
         <RouterLink to="/" class="flex items-center justify-self-start">
           <img
@@ -35,12 +40,9 @@ function logout() {
           />
         </RouterLink>
 
-        <!-- extra tab buttons-->
         <div class="justify-self-center flex items-center gap-4">
           <FoldNavLink side="left" to="/collection" label="Collection" />
-
           <HeroCharacter class="hidden sm:block" size="header" />
-
           <FoldNavLink side="right" to="/" label="Hauptseite" />
         </div>
 
@@ -52,7 +54,8 @@ function logout() {
       </div>
     </header>
 
-    <main class="container-app py-6">
+    <!-- IMPORTANT: Collection needs full-bleed without extra padding -->
+    <main :class="isCollection ? 'p-0' : 'container-app py-6'">
       <RouterView v-slot="{ Component }">
         <Transition name="page" mode="out-in">
           <component :is="Component" />
@@ -61,4 +64,3 @@ function logout() {
     </main>
   </div>
 </template>
-

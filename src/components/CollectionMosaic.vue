@@ -12,8 +12,8 @@ type Item = {
 }
 
 const props = defineProps<{ items: Item[] }>()
-
 const router = useRouter()
+
 const containerRef = ref<HTMLElement | null>(null)
 
 const posterOverrides = ref<Record<string, string | null>>({})
@@ -41,23 +41,31 @@ function openDetails(it: Item) {
   router.push({
     name: 'details',
     params: { kind: it.kind, id: String(it.id) },
-    query: { from: 'collection' } // <-- makes back go to Collection
+    query: { from: 'collection' }
   })
 }
 
-// ---- layout sizing (auto adjusts with count + viewport) ----
-const w = ref(0)
-const h = ref(0)
+// --- viewport sizing (DON'T use content height, it breaks auto-sizing) ---
+const containerW = ref(0)
+const viewportH = ref(0)
+const viewportW = ref(0)
 let ro: ResizeObserver | null = null
+
+const HEADER_H = 96
 
 function clamp(n: number, a: number, b: number) {
   return Math.max(a, Math.min(b, n))
 }
 
+function updateViewport() {
+  viewportW.value = window.innerWidth
+  viewportH.value = Math.max(600, window.innerHeight - HEADER_H)
+}
+
 const cols = computed(() => {
   const n = Math.max(1, props.items.length)
-  const width = w.value || 1200
-  const height = h.value || 800
+  const width = containerW.value || viewportW.value || 1200
+  const height = viewportH.value || 800
 
   const area = width * height
   const targetAreaPerItem = area / n
@@ -71,7 +79,7 @@ const cols = computed(() => {
 })
 
 const rowPx = computed(() => {
-  const width = w.value || 1200
+  const width = containerW.value || viewportW.value || 1200
   const c = cols.value
   const colW = width / c
   return Math.round(colW * 0.58)
@@ -120,30 +128,36 @@ watch(
 )
 
 onMounted(() => {
-  if (!containerRef.value) return
-  ro = new ResizeObserver((entries) => {
-    const r = entries[0]?.contentRect
-    if (!r) return
-    w.value = r.width
-    h.value = r.height
-  })
-  ro.observe(containerRef.value)
+  updateViewport()
+  window.addEventListener('resize', updateViewport, { passive: true })
+
+  if (containerRef.value) {
+    ro = new ResizeObserver((entries) => {
+      const r = entries[0]?.contentRect
+      if (!r) return
+      containerW.value = r.width
+    })
+    ro.observe(containerRef.value)
+  }
 })
 
 onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateViewport)
   if (ro) ro.disconnect()
 })
 </script>
 
 <template>
-  <div ref="containerRef" class="relative h-full w-full overflow-hidden">
+  <div ref="containerRef" class="relative w-full min-h-[calc(100dvh-96px)]">
+    <!-- background depth -->
     <div class="pointer-events-none absolute inset-0">
       <div class="absolute inset-0 bg-[radial-gradient(1000px_circle_at_30%_0%,rgba(255,255,255,0.06),transparent_55%)]" />
       <div class="absolute inset-0 bg-[radial-gradient(900px_circle_at_70%_120%,rgba(229,9,20,0.09),transparent_60%)]" />
       <div class="absolute inset-0 bg-black/25" />
     </div>
 
-    <div class="relative h-full w-full overflow-auto px-4 py-4 md:px-6 md:py-6">
+    <!-- IMPORTANT: no overflow-auto here -> page scroll -->
+    <div class="relative w-full px-4 py-4 md:px-6 md:py-6">
       <div class="grid gap-2 md:gap-3 [grid-auto-flow:dense]" :style="gridStyle">
         <button
           v-for="(it, i) in props.items"
