@@ -52,7 +52,14 @@ const posterUrl = computed(() => {
 const trailerSrc = computed(() => trailer.value?.url ?? null)
 
 function back() {
-  router.push({ name: 'home' })
+  const fromRaw = route.query.from
+  const from = Array.isArray(fromRaw) ? fromRaw[0] : fromRaw
+
+  if (from === 'collection') {
+    router.push({ name: 'collection' })
+  } else {
+    router.push({ name: 'home' })
+  }
 }
 
 async function load() {

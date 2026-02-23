@@ -2,9 +2,9 @@
 import { computed, onMounted, ref } from 'vue'
 import type { FilmDto, SerieDto } from '@/types/media'
 import { getFilms, getSeries } from '@/api/mediaApi'
-import CollectionBubbles from '@/components/CollectionBubbles.vue'
+import CollectionMosaic from '@/components/CollectionMosaic.vue'
 
-type BubbleItem = {
+type CollectionItem = {
   key: string
   kind: 'movie' | 'series'
   id: number
@@ -18,7 +18,7 @@ const error = ref<string | null>(null)
 const films = ref<FilmDto[]>([])
 const series = ref<SerieDto[]>([])
 
-const items = computed<BubbleItem[]>(() => {
+const items = computed<CollectionItem[]>(() => {
   const f = (films.value ?? []).map((x) => ({
     key: `movie:${x.id}`,
     kind: 'movie' as const,
@@ -54,13 +54,21 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="relative">
-    <div v-if="loading" class="alert info">Lade Collection…</div>
-    <div v-else-if="error" class="alert error">Fehler: {{ error }}</div>
-    <div v-else-if="items.length === 0" class="alert info">Noch keine Einträge gespeichert.</div>
+  <div class="relative left-1/2 right-1/2 w-screen -ml-[50vw] -mr-[50vw]">
+    <div v-if="loading" class="px-6 py-6">
+      <div class="alert info">Lade Collection…</div>
+    </div>
 
-    <div v-else class="relative left-1/2 right-1/2 w-screen -ml-[50vw] -mr-[50vw] px-4">
-      <CollectionBubbles :items="items" />
+    <div v-else-if="error" class="px-6 py-6">
+      <div class="alert error">Fehler: {{ error }}</div>
+    </div>
+
+    <div v-else-if="items.length === 0" class="px-6 py-6">
+      <div class="alert info">Noch keine Einträge gespeichert.</div>
+    </div>
+
+    <div v-else class="h-[calc(100dvh-88px)] w-full">
+      <CollectionMosaic :items="items" />
     </div>
   </div>
 </template>
