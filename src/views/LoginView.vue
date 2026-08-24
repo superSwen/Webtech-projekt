@@ -58,7 +58,6 @@ async function submit() {
       <section class="card w-full max-w-md">
         <!-- header -->
         <div class="flex items-center gap-4">
-          <!-- KEIN viereck/box mehr ums logo -->
           <img class="h-48 w-auto shrink-0" :src="logoUrl" alt="Logo" />
 
           <div class="flex-1">
