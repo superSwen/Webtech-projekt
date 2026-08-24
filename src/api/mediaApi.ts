@@ -1,7 +1,7 @@
 import { api } from './http'
 import type { FilmDto, SerieDto, FilmCreateUpdate, SerieCreateUpdate } from '@/types/media'
 
-// --- FILMSSS ---
+// Films
 export async function getFilms(): Promise<FilmDto[]> {
   const res = await api.get<FilmDto[]>('/api/films')
   return res.data
@@ -18,7 +18,6 @@ export async function createFilm(payload: FilmCreateUpdate): Promise<FilmDto> {
 }
 
 export async function updateFilm(id: number, payload: FilmCreateUpdate): Promise<FilmDto> {
-  // Backend hat PUT /api/films/{id}
   const res = await api.put<FilmDto>(`/api/films/${id}`, payload)
   return res.data
 }
@@ -44,7 +43,6 @@ export async function createSerie(payload: SerieCreateUpdate): Promise<SerieDto>
 }
 
 export async function updateSerie(id: number, payload: SerieCreateUpdate): Promise<SerieDto> {
-  // Backend hat PUT /api/series/{id}
   const res = await api.put<SerieDto>(`/api/series/${id}`, payload)
   return res.data
 }

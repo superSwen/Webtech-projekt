@@ -4,7 +4,7 @@ export type FilmDto = {
   minutes?: number | null
   notes?: string | null
   imdbId?: string | null
-  posterUrl?: string | null // ✅ cached poster URL from backend
+  posterUrl?: string | null
 }
 
 export type SerieDto = {
@@ -15,7 +15,7 @@ export type SerieDto = {
   minutes?: number | null
   notes?: string | null
   imdbId?: string | null
-  posterUrl?: string | null // ✅ cached poster URL from backend
+  posterUrl?: string | null
 }
 
 export type FilmCreateUpdate = {

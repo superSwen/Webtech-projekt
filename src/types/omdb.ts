@@ -1,4 +1,3 @@
-// src/types/omdb.ts
 export type OmdbMovie = {
   Title?: string
   Year?: string

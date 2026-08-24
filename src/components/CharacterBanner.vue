@@ -22,7 +22,7 @@ function hasPoster() {
     </div>
 
     <div v-else class="placeholder" :class="variant">
-      <span>kein Artwork</span>
+      <span>Kein Artwork</span>
     </div>
   </div>
 </template>
@@ -43,7 +43,6 @@ function hasPoster() {
   box-shadow: 0 10px 40px rgba(0,0,0,0.55);
 }
 
-/* "Cutout"-Look: Bild wird nicht einfach stumpf gezeigt, sondern "ausgeblendet" */
 .art img {
   display: block;
   width: 100%;
@@ -54,7 +53,6 @@ function hasPoster() {
   filter: drop-shadow(0 14px 28px rgba(0,0,0,0.75));
 }
 
-/* Verlaufs-Fadeee: lässt es wie freigestellt wirken */
 .fade {
   pointer-events: none;
   position: absolute;

@@ -1,4 +1,3 @@
-// src/api/tmdbApi.ts
 import { api } from '@/api/http'
 
 // =========================

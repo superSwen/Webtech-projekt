@@ -4,7 +4,6 @@ type MediaKind = 'film' | 'serie'
 
 const STORAGE_KEY = 'mst_favorites_v1'
 
-// Keys wie "film:12" oder "serie:7"
 const favorites = ref<Set<string>>(new Set())
 
 function key(kind: MediaKind, id: number | string) {
@@ -28,7 +27,6 @@ function saveToStorage() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify([...favorites.value]))
 }
 
-// einmal beim Import laden
 loadFromStorage()
 
 export function useFavorites() {
@@ -43,7 +41,7 @@ export function useFavorites() {
     if (next.has(k)) next.delete(k)
     else next.add(k)
 
-    favorites.value = next // wichtig: neues Set zuweisen -> reaktiv
+    favorites.value = next
     saveToStorage()
   }
 

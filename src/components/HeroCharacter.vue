@@ -19,8 +19,8 @@ type HeroItem = { title: string; imageUrl: string }
 const candidates: HeroItem[] = [
   { title: 'Gravity Falls', imageUrl: gravityfallsUrl },
   { title: 'Joker', imageUrl: jokerUrl },
-  { title: 'anko', imageUrl: ankoUrl },
-  { title: 'tanjiro', imageUrl: tanjiroUrl },
+  { title: 'Anko', imageUrl: ankoUrl },
+  { title: 'Tanjiro', imageUrl: tanjiroUrl },
   { title: 'Luffy', imageUrl: luffyUrl },
   { title: 'Vader', imageUrl: vaderUrl },
 ]

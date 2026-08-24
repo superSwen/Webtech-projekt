@@ -9,7 +9,6 @@ export type OmdbSearchItem = {
 }
 
 export type OmdbSearchResponse = {
-  // Backend liefert i.d.R. "Search" (wie OMDb), wir supporten beide Varianten
   Search?: OmdbSearchItem[]
   search?: OmdbSearchItem[]
   totalResults?: string

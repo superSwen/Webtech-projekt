@@ -263,7 +263,7 @@ onBeforeUnmount(() => abortPending())
     </header>
 
     <p v-if="!hasEntries" class="muted mt-3">
-      Noch keine Filme/Serien vorhanden — Leg erstmal Filme oder Serien an 🙂
+      Noch keine Filme oder Serien vorhanden.
     </p>
 
     <div v-if="hasEntries" class="mt-3 flex flex-wrap items-center gap-2">
@@ -339,7 +339,7 @@ onBeforeUnmount(() => abortPending())
           {{ plot }}
         </p>
         <p v-else class="mt-3 text-sm text-white/50">
-          *Leider ist keine Beschreibung vorhanden :(
+          Keine Beschreibung verfügbar.
         </p>
 
 
